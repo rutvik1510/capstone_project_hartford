@@ -1,0 +1,65 @@
+<div class="min-h-screen bg-[#111827] flex items-center justify-center px-4 relative overflow-hidden">
+
+  <!-- Glow blobs -->
+  <div class="absolute -top-40 -right-40 w-96 h-96 bg-[#8C1D40]/20 rounded-full blur-3xl"></div>
+  <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-[#6E1733]/20 rounded-full blur-3xl"></div>
+
+  <div class="w-full max-w-md relative z-10">
+    <div class="bg-[#1F2937] border border-white/10 rounded-3xl shadow-2xl px-8 py-10">
+
+      <div class="mb-8 text-center">
+        <h1 class="text-3xl font-bold text-white mb-2">Welcome Back</h1>
+        <p class="text-white/70">Sign in to your EventGuard account</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-bold text-white mb-1.5">Email Address</label>
+          <input type="email" formControlName="email" placeholder="rahul@example.com"
+            class="w-full px-4 py-3 rounded-xl bg-[#374151] border !text-white placeholder-gray-400 font-medium focus:outline-none focus:ring-2 focus:ring-[#8C1D40] transition-all"
+            [class.border-red-500]="emailControl.touched && emailControl.invalid"
+            [class.border-white/10]="!(emailControl.touched && emailControl.invalid)" />
+          @if (emailControl.touched && emailControl.invalid) {
+            <p class="mt-1 text-xs font-bold text-red-400">Please enter a valid email</p>
+          }
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-sm font-bold text-white mb-1.5">Password</label>
+          <input type="password" formControlName="password" placeholder="••••••••"
+            class="w-full px-4 py-3 rounded-xl bg-[#374151] border !text-white placeholder-gray-400 font-medium focus:outline-none focus:ring-2 focus:ring-[#8C1D40] transition-all"
+            [class.border-red-500]="passwordControl.touched && passwordControl.invalid"
+            [class.border-white/10]="!(passwordControl.touched && passwordControl.invalid)" />
+          @if (passwordControl.touched && passwordControl.invalid) {
+            <p class="mt-1 text-xs font-bold text-red-400">Password is required</p>
+          }
+        </div>
+
+        @if (errorMessage()) {
+          <div class="p-3 rounded-lg bg-red-500/10 border border-red-500/50 text-red-400 text-sm font-bold text-center">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <button type="submit" 
+          [disabled]="form.invalid || isLoading() || !form.dirty"
+          class="w-full py-4 rounded-xl text-white font-bold text-lg bg-[#8C1D40] hover:bg-[#6E1733] disabled:bg-gray-600/50 disabled:text-white/30 disabled:cursor-not-allowed transition-all shadow-lg active:scale-95">
+          @if (isLoading()) {
+            <span class="inline-block animate-spin mr-2">◌</span> Signing in...
+          } @else {
+            Sign In
+          }
+        </button>
+
+        <p class="text-center text-white/60 text-sm font-medium">
+          Don't have an account? 
+          <a routerLink="/register" class="text-[#8C1D40] font-bold cursor-pointer hover:underline">Register free</a>
+        </p>
+
+      </form>
+    </div>
+  </div>
+</div>

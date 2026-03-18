@@ -1,0 +1,160 @@
+<div class="min-h-screen bg-[#F9FAFB] py-10 px-4">
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Back button -->
+    <button (click)="goBack()" class="flex items-center gap-2 mb-6 text-sm text-[#374151] hover:text-[#8C1D40] transition-colors font-medium">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      Back to Dashboard
+    </button>
+
+    @if (isLoading()) {
+      <div class="flex justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8C1D40]"></div>
+      </div>
+    } @else if (sub()) {
+      
+      <!-- Top Status Banner -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-[#1F2937]">{{ sub().eventName }}</h1>
+          <p class="text-sm text-slate-500">Subscription ID: #{{ sub().subscriptionId }}</p>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <span [class]="'px-3 py-1 rounded-full text-xs font-bold ' + statusClass(sub().status)">
+            {{ sub().status }}
+          </span>
+          @if (sub().status === 'REJECTED' && sub().rejectionReason) {
+            <p class="text-xs text-red-600 font-bold italic">Reason: {{ sub().rejectionReason }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left: Event & Customer Info -->
+        <div class="lg:col-span-2 space-y-6">
+          
+          <!-- Event Summary -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-[#1F2937] mb-4 border-b pb-2">Event Summary</h2>
+            <div class="grid grid-cols-2 gap-y-4">
+              <div><p class="text-xs text-slate-500 uppercase font-bold">Type</p><p class="text-sm font-medium">{{ sub().eventType }}</p></div>
+              <div><p class="text-xs text-slate-500 uppercase font-bold">Date</p><p class="text-sm font-medium">{{ sub().eventDate }}</p></div>
+              <div><p class="text-xs text-slate-500 uppercase font-bold">Location</p><p class="text-sm font-medium">{{ sub().location }}</p></div>
+              <div><p class="text-xs text-slate-500 uppercase font-bold">Attendees</p><p class="text-sm font-medium">{{ sub().numberOfAttendees | number }}</p></div>
+              <div><p class="text-xs text-slate-500 uppercase font-bold">Budget</p><p class="text-sm font-medium">₹{{ sub().budget | number }}</p></div>
+              <div><p class="text-xs text-slate-500 uppercase font-bold">Customer</p><p class="text-sm font-medium">{{ sub().customerName }}</p></div>
+            </div>
+          </div>
+
+          <!-- Safety & Security Measures -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-[#1F2937] mb-4 border-b pb-2">Safety Disclosures</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="flex items-center gap-2 p-3 rounded-xl border" [class.bg-green-50]="sub().hasFireNOC" [class.border-green-200]="sub().hasFireNOC">
+                <span [class]="sub().hasFireNOC ? 'text-green-600' : 'text-slate-300'">●</span>
+                <span class="text-sm font-medium">Valid Fire NOC</span>
+              </div>
+              <div class="flex items-center gap-2 p-3 rounded-xl border" [class.bg-green-50]="sub().hasProfessionalSecurity" [class.border-green-200]="sub().hasProfessionalSecurity">
+                <span [class]="sub().hasProfessionalSecurity ? 'text-green-600' : 'text-slate-300'">●</span>
+                <span class="text-sm font-medium">Professional Guards</span>
+              </div>
+              <div class="flex items-center gap-2 p-3 rounded-xl border" [class.bg-green-50]="sub().hasCCTV" [class.border-green-200]="sub().hasCCTV">
+                <span [class]="sub().hasCCTV ? 'text-green-600' : 'text-slate-300'">●</span>
+                <span class="text-sm font-medium">CCTV Coverage</span>
+              </div>
+              <div class="flex items-center gap-2 p-3 rounded-xl border" [class.bg-green-50]="sub().hasMetalDetectors" [class.border-green-200]="sub().hasMetalDetectors">
+                <span [class]="sub().hasMetalDetectors ? 'text-green-600' : 'text-slate-300'">●</span>
+                <span class="text-sm font-medium">Metal Detectors</span>
+              </div>
+            </div>
+
+            @if (sub().safetyComplianceDocPath) {
+              <div class="mt-6 p-4 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span class="text-sm font-bold text-blue-900">Safety Proof: <span class="font-normal">{{ sub().safetyComplianceDocPath }}</span></span>
+                </div>
+                <button class="text-xs font-black text-blue-600 uppercase hover:underline">Verify PDF</button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Right: Risk & Financials -->
+        <div class="space-y-6">
+          
+          <!-- Risk Breakdown -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-[#1F2937] mb-4">Risk Breakdown</h2>
+            <div class="space-y-3 mb-6">
+              @for (item of getRiskBreakdown(); track item.factor) {
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-slate-600">{{ item.factor }}</span>
+                  <span [class]="item.contribution.toString().startsWith('-') ? 'text-green-600 font-bold' : 'text-red-600 font-bold'">
+                    {{ item.contribution }}%
+                  </span>
+                </div>
+              }
+            </div>
+            <div class="pt-4 border-t border-slate-100">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-base font-bold text-[#1F2937]">Total Risk Score</span>
+                <span class="text-xl font-black text-[#8C1D40]">{{ sub().totalRisk }}%</span>
+              </div>
+              <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">System Generated Estimate</p>
+            </div>
+          </div>
+
+          <!-- Premium -->
+          <div class="bg-[#1F2937] rounded-2xl shadow-xl p-6 text-white">
+            <p class="text-xs text-white/60 uppercase font-bold mb-1">
+              {{ sub().premiumOverrideAmount ? 'Final Adjusted Premium' : 'Calculated Premium' }}
+            </p>
+            <h3 class="text-3xl font-black mb-2">₹{{ sub().premiumAmount | number }}</h3>
+            
+            @if (sub().premiumOverrideAmount) {
+              <div class="mb-6 p-3 rounded-lg bg-white/5 border border-white/10">
+                <p class="text-[9px] text-white/40 uppercase font-black mb-1">Underwriter Adjustment</p>
+                <p class="text-xs font-medium italic text-blue-300">"{{ sub().overrideReason }}"</p>
+              </div>
+            } @else {
+              <div class="mb-6"></div>
+            }
+            
+            @if (sub().status === 'PENDING') {
+              <div class="space-y-3">
+                <button (click)="approve()" [disabled]="processingAction()" 
+                  class="w-full py-3 bg-green-600 hover:bg-green-700 rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg shadow-green-900/20">
+                  Approve Policy
+                </button>
+                <button (click)="reject()" [disabled]="processingAction()" 
+                  class="w-full py-3 bg-red-600/20 hover:bg-red-600 border border-red-600 rounded-xl font-bold transition-all disabled:opacity-50">
+                  Reject Application
+                </button>
+              </div>
+            } @else {
+              <div class="p-3 bg-white/10 rounded-xl border border-white/10 text-center text-sm font-medium">
+                Decision finalized on {{ sub().approvedAt | date:'mediumDate' }}
+              </div>
+            }
+          </div>
+
+          @if (actionError()) {
+            <p class="text-sm text-red-600 font-bold text-center bg-red-50 p-3 rounded-lg border border-red-100">{{ actionError() }}</p>
+          }
+          @if (successMessage()) {
+            <p class="text-sm text-green-600 font-bold text-center bg-green-50 p-3 rounded-lg border border-green-100">{{ successMessage() }}</p>
+          }
+
+        </div>
+      </div>
+
+    } @else {
+      <div class="bg-white p-10 rounded-2xl shadow-sm border border-slate-200 text-center">
+        <p class="text-slate-500">{{ errorMessage() || 'No data found' }}</p>
+      </div>
+    }
+
+  </div>
+</div>

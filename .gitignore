@@ -1,0 +1,21 @@
+# Backend
+target/
+*.log
+
+# Frontend
+node_modules/
+dist/
+
+# Database
+*.mv.db
+*.trace.db
+
+# Uploads
+uploads/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store

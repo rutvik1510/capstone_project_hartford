@@ -1,0 +1,328 @@
+package org.hartford.eventguard.dto;
+
+public class UnderwriterSubscriptionResponse {
+
+    private Long subscriptionId;
+
+    // Event details
+    private String eventName;
+    private String eventType;
+    private java.time.LocalDate eventDate;
+    private String location;
+    private Integer numberOfAttendees;
+    private Double budget;
+
+    // Customer details
+    private String customerName;
+
+    // Policy details
+    private String policyName;
+    private String policyDescription;
+    private Double baseRate;
+    private Double maxCoverageAmount;
+    private Double riskPercentage;
+
+    // Risk breakdown
+    private Double eventRisk;
+    private Double weatherRisk;
+    private Double totalRisk;
+    private String riskLevel;
+
+    // Weather details
+    private String weatherCondition;
+    private Double temperature;
+    private Double windSpeed;
+    private Double humidity;
+    private WeatherDetails weatherDetails;
+
+    // Premium and status
+    private Double premiumAmount;
+    private String status;
+    private String rejectionReason;
+    private Double premiumOverrideAmount;
+    private String overrideReason;
+    private String safetyComplianceDocPath;
+    private String assignedUnderwriterName;
+
+    // Objective Security & Safety fields
+    private Boolean hasProfessionalSecurity;
+    private Boolean hasCCTV;
+    private Boolean hasMetalDetectors;
+    private Boolean hasFireNOC;
+    private Boolean hasOnSiteFireSafety;
+
+    public UnderwriterSubscriptionResponse() {
+    }
+
+    public String getAssignedUnderwriterName() {
+        return assignedUnderwriterName;
+    }
+
+    public void setAssignedUnderwriterName(String assignedUnderwriterName) {
+        this.assignedUnderwriterName = assignedUnderwriterName;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
+    }
+
+    public Double getPremiumOverrideAmount() {
+        return premiumOverrideAmount;
+    }
+
+    public void setPremiumOverrideAmount(Double premiumOverrideAmount) {
+        this.premiumOverrideAmount = premiumOverrideAmount;
+    }
+
+    public String getOverrideReason() {
+        return overrideReason;
+    }
+
+    public void setOverrideReason(String overrideReason) {
+        this.overrideReason = overrideReason;
+    }
+
+    public String getSafetyComplianceDocPath() {
+        return safetyComplianceDocPath;
+    }
+
+    public void setSafetyComplianceDocPath(String safetyComplianceDocPath) {
+        this.safetyComplianceDocPath = safetyComplianceDocPath;
+    }
+
+    public Boolean getHasProfessionalSecurity() {
+        return hasProfessionalSecurity;
+    }
+
+    public void setHasProfessionalSecurity(Boolean hasProfessionalSecurity) {
+        this.hasProfessionalSecurity = hasProfessionalSecurity;
+    }
+
+    public Boolean getHasCCTV() {
+        return hasCCTV;
+    }
+
+    public void setHasCCTV(Boolean hasCCTV) {
+        this.hasCCTV = hasCCTV;
+    }
+
+    public Boolean getHasMetalDetectors() {
+        return hasMetalDetectors;
+    }
+
+    public void setHasMetalDetectors(Boolean hasMetalDetectors) {
+        this.hasMetalDetectors = hasMetalDetectors;
+    }
+
+    public Boolean getHasFireNOC() {
+        return hasFireNOC;
+    }
+
+    public void setHasFireNOC(Boolean hasFireNOC) {
+        this.hasFireNOC = hasFireNOC;
+    }
+
+    public Boolean getHasOnSiteFireSafety() {
+        return hasOnSiteFireSafety;
+    }
+
+    public void setHasOnSiteFireSafety(Boolean hasOnSiteFireSafety) {
+        this.hasOnSiteFireSafety = hasOnSiteFireSafety;
+    }
+
+    public Long getSubscriptionId() {
+        return subscriptionId;
+    }
+
+    public void setSubscriptionId(Long subscriptionId) {
+        this.subscriptionId = subscriptionId;
+    }
+
+    public String getEventName() {
+        return eventName;
+    }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
+
+    public java.time.LocalDate getEventDate() {
+        return eventDate;
+    }
+
+    public void setEventDate(java.time.LocalDate eventDate) {
+        this.eventDate = eventDate;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public Integer getNumberOfAttendees() {
+        return numberOfAttendees;
+    }
+
+    public void setNumberOfAttendees(Integer numberOfAttendees) {
+        this.numberOfAttendees = numberOfAttendees;
+    }
+
+    public Double getBudget() {
+        return budget;
+    }
+
+    public void setBudget(Double budget) {
+        this.budget = budget;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getPolicyName() {
+        return policyName;
+    }
+
+    public void setPolicyName(String policyName) {
+        this.policyName = policyName;
+    }
+
+    public String getPolicyDescription() {
+        return policyDescription;
+    }
+
+    public void setPolicyDescription(String policyDescription) {
+        this.policyDescription = policyDescription;
+    }
+
+    public Double getBaseRate() {
+        return baseRate;
+    }
+
+    public void setBaseRate(Double baseRate) {
+        this.baseRate = baseRate;
+    }
+
+    public Double getMaxCoverageAmount() {
+        return maxCoverageAmount;
+    }
+
+    public void setMaxCoverageAmount(Double maxCoverageAmount) {
+        this.maxCoverageAmount = maxCoverageAmount;
+    }
+
+    public Double getRiskPercentage() {
+        return riskPercentage;
+    }
+
+    public void setRiskPercentage(Double riskPercentage) {
+        this.riskPercentage = riskPercentage;
+    }
+
+    public Double getEventRisk() {
+        return eventRisk;
+    }
+
+    public void setEventRisk(Double eventRisk) {
+        this.eventRisk = eventRisk;
+    }
+
+    public Double getWeatherRisk() {
+        return weatherRisk;
+    }
+
+    public void setWeatherRisk(Double weatherRisk) {
+        this.weatherRisk = weatherRisk;
+    }
+
+    public Double getTotalRisk() {
+        return totalRisk;
+    }
+
+    public void setTotalRisk(Double totalRisk) {
+        this.totalRisk = totalRisk;
+    }
+
+    public String getRiskLevel() {
+        return riskLevel;
+    }
+
+    public void setRiskLevel(String riskLevel) {
+        this.riskLevel = riskLevel;
+    }
+
+    public String getWeatherCondition() {
+        return weatherCondition;
+    }
+
+    public void setWeatherCondition(String weatherCondition) {
+        this.weatherCondition = weatherCondition;
+    }
+
+    public Double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(Double temperature) {
+        this.temperature = temperature;
+    }
+
+    public Double getWindSpeed() {
+        return windSpeed;
+    }
+
+    public void setWindSpeed(Double windSpeed) {
+        this.windSpeed = windSpeed;
+    }
+
+    public Double getHumidity() {
+        return humidity;
+    }
+
+    public void setHumidity(Double humidity) {
+        this.humidity = humidity;
+    }
+
+    public WeatherDetails getWeatherDetails() {
+        return weatherDetails;
+    }
+
+    public void setWeatherDetails(WeatherDetails weatherDetails) {
+        this.weatherDetails = weatherDetails;
+    }
+
+    public Double getPremiumAmount() {
+        return premiumAmount;
+    }
+
+    public void setPremiumAmount(Double premiumAmount) {
+        this.premiumAmount = premiumAmount;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+}
