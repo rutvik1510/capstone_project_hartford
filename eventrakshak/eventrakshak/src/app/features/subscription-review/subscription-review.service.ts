@@ -11,11 +11,11 @@ export class SubscriptionReviewService {
     return this.http.get(`${this.base}/${id}`);
   }
 
-  approve(id: number): Observable<any> {
-    return this.http.put(`${this.base}/${id}/approve`, {});
+  approve(id: number, payload: { premiumOverrideAmount?: number, overrideReason?: string, underwriterNotes?: string }): Observable<any> {
+    return this.http.put(`${this.base}/${id}/approve`, payload);
   }
 
-  reject(id: number, reason: string): Observable<any> {
-    return this.http.put(`${this.base}/${id}/reject`, { reason });
+  reject(id: number, reason: string, underwriterNotes?: string): Observable<any> {
+    return this.http.put(`${this.base}/${id}/reject`, { reason, underwriterNotes });
   }
 }

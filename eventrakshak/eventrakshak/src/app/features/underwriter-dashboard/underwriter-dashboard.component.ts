@@ -109,6 +109,20 @@ export class UnderwriterDashboardComponent {
     window.open(url, '_blank');
   }
 
+  downloadReport(subscriptionId: number): void {
+    this.service.downloadPolicyReport(subscriptionId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Policy_Report_${subscriptionId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => this.actionError.set('Failed to download report.')
+    });
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);

@@ -39,6 +39,7 @@ public class UnderwriterSubscriptionResponse {
     private Double premiumAmount;
     private String status;
     private String rejectionReason;
+    private String underwriterNotes;
     private Double premiumOverrideAmount;
     private String overrideReason;
     private String safetyComplianceDocPath;
@@ -68,6 +69,14 @@ public class UnderwriterSubscriptionResponse {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getUnderwriterNotes() {
+        return underwriterNotes;
+    }
+
+    public void setUnderwriterNotes(String underwriterNotes) {
+        this.underwriterNotes = underwriterNotes;
     }
 
     public Double getPremiumOverrideAmount() {

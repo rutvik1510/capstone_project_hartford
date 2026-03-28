@@ -54,9 +54,19 @@ public class ClaimService {
         return getClaimsForOfficer(email);
     }
 
-    public ClaimResponse getClaimByIdDTO(Long id) {
+    public ClaimResponse getClaimByIdDTO(Long id, String email) {
         Claim claim = claimsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Claim not found"));
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Security Check: Customer can only see their own.
+        boolean isCustomer = user.getRoles().stream().anyMatch(r -> r.getRoleName().equals("CUSTOMER"));
+        if (isCustomer && !claim.getPolicySubscription().getEvent().getUser().getEmail().equals(email)) {
+            throw new UnauthorizedAccessException("You do not have permission to view this claim");
+        }
+
         return convertToClaimResponse(claim);
     }
     // --------------------------------------------------
@@ -180,7 +190,7 @@ public class ClaimService {
                 .collect(Collectors.toList());
     }
 
-    public ClaimResponse approveClaim(Long id, String email, Double amount) {
+    public ClaimResponse approveClaim(Long id, String email, Double amount, String remarks) {
         Claim claim = claimsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Claim not found"));
 
@@ -192,6 +202,7 @@ public class ClaimService {
         }
 
         claim.setStatus(ClaimStatus.APPROVED);
+        claim.setInternalRemarks(remarks);
         
         // Default to full requested amount if no specific amount provided
         if (amount == null || amount <= 0) {
@@ -213,7 +224,7 @@ public class ClaimService {
         return convertToClaimResponse(claim);
     }
 
-    public ClaimResponse rejectClaim(Long id, String email, String reason) {
+    public ClaimResponse rejectClaim(Long id, String email, String reason, String remarks) {
         Claim claim = claimsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Claim not found"));
 
@@ -226,6 +237,7 @@ public class ClaimService {
 
         claim.setStatus(ClaimStatus.REJECTED);
         claim.setRejectionReason(reason);
+        claim.setInternalRemarks(remarks);
         claim.setResolvedAt(LocalDateTime.now());
         claim.setResolvedBy(officer);
         
@@ -255,6 +267,24 @@ public class ClaimService {
         }
 
         claim.setStatus(ClaimStatus.COLLECTED);
+        claimsRepository.save(claim);
+
+        return convertToClaimResponse(claim);
+    }
+
+    public ClaimResponse updateClaimRemarks(Long id, String email, String remarks, String checklist) {
+        Claim claim = claimsRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Claim not found"));
+
+        User officer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Officer not found"));
+
+        if (claim.getAssignedOfficer() == null || !claim.getAssignedOfficer().getUserId().equals(officer.getUserId())) {
+            throw new UnauthorizedAccessException("Claim not assigned to you");
+        }
+
+        claim.setInternalRemarks(remarks);
+        claim.setVerificationChecklist(checklist);
         claimsRepository.save(claim);
 
         return convertToClaimResponse(claim);
@@ -320,6 +350,8 @@ public class ClaimService {
         dto.setDescription(claim.getDescription());
         dto.setStatus(claim.getStatus().toString());
         dto.setRejectionReason(claim.getRejectionReason());
+        dto.setInternalRemarks(claim.getInternalRemarks());
+        dto.setVerificationChecklist(claim.getVerificationChecklist());
         dto.setFiledAt(claim.getFiledAt());
         dto.setAssignedOfficerName(claim.getAssignedOfficer() != null ? claim.getAssignedOfficer().getFullName() : "NOT ASSIGNED");
 

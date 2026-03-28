@@ -40,8 +40,9 @@ public class UnderwriterSubscriptionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UnderwriterSubscriptionDetailsResponse>> getSubscriptionDetails(
-            @PathVariable Long id) {
-        UnderwriterSubscriptionDetailsResponse details = subscriptionService.getSubscriptionDetails(id);
+            @PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        UnderwriterSubscriptionDetailsResponse details = subscriptionService.getSubscriptionDetails(id, email);
         return ResponseEntity.ok(ApiResponse.success("Subscription details retrieved successfully", details));
     }
 
@@ -54,8 +55,9 @@ public class UnderwriterSubscriptionController {
         String email = authentication.getName();
         Double override = (request != null) ? request.getPremiumOverrideAmount() : null;
         String reason = (request != null) ? request.getOverrideReason() : null;
+        String notes = (request != null) ? request.getUnderwriterNotes() : null;
 
-        SubscriptionResponseDTO response = subscriptionService.approveSubscription(id, email, override, reason);
+        SubscriptionResponseDTO response = subscriptionService.approveSubscription(id, email, override, reason, notes);
         return ResponseEntity.ok(ApiResponse.success("Subscription approved successfully", response));
     }
 
@@ -67,7 +69,8 @@ public class UnderwriterSubscriptionController {
 
         String email = authentication.getName();
         String reason = (request != null && request.getReason() != null) ? request.getReason() : "Risk threshold exceeded";
-        subscriptionService.rejectSubscription(id, email, reason);
+        String notes = (request != null) ? request.getUnderwriterNotes() : null;
+        subscriptionService.rejectSubscription(id, email, reason, notes);
         return ResponseEntity.ok(ApiResponse.success("Subscription rejected"));
     }
 }

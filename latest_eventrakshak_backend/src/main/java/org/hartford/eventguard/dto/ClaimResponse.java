@@ -16,6 +16,8 @@ public class ClaimResponse {
     private String description;
     private String status;
     private String rejectionReason;
+    private String internalRemarks;
+    private String verificationChecklist;
     private LocalDateTime filedAt;
     private String assignedOfficerName;
 
@@ -50,6 +52,22 @@ public class ClaimResponse {
     private String weatherCondition;
 
     public ClaimResponse() {
+    }
+
+    public String getInternalRemarks() {
+        return internalRemarks;
+    }
+
+    public void setInternalRemarks(String internalRemarks) {
+        this.internalRemarks = internalRemarks;
+    }
+
+    public String getVerificationChecklist() {
+        return verificationChecklist;
+    }
+
+    public void setVerificationChecklist(String verificationChecklist) {
+        this.verificationChecklist = verificationChecklist;
     }
 
     public String getAssignedOfficerName() {

@@ -14,11 +14,11 @@ export class SubscriptionDetailsService {
     return this.http.put(`http://localhost:8080/underwriter/subscriptions/${id}/approve`, payload);
   }
 
-  rejectSubscription(id: number, reason?: string): Observable<any> {
-    let params = new HttpParams();
-    if (reason) {
-      params = params.set('reason', reason);
-    }
-    return this.http.put(`http://localhost:8080/underwriter/subscriptions/${id}/reject`, {}, { params });
+  rejectSubscription(id: number, reason?: string, notes?: string): Observable<any> {
+    const payload: any = {};
+    if (reason) payload.reason = reason;
+    if (notes) payload.underwriterNotes = notes;
+    
+    return this.http.put(`http://localhost:8080/underwriter/subscriptions/${id}/reject`, payload);
   }
 }

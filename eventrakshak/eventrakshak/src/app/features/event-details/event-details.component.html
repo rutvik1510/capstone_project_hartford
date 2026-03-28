@@ -58,11 +58,18 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
       @for (policy of availablePolicies(); track (policy.policyId ?? policy.id)) {
         <div class="relative flex flex-col bg-white rounded-3xl border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
-             [class.border-[#8C1D40]]="policy.policyName.includes('Platinum')"
-             [class.border-slate-100]="!policy.policyName.includes('Platinum')">
+             [class.border-[#8C1D40]]="(policy.policyId ?? policy.id) === aiService.suggestedPolicyId() || policy.policyName.includes('Platinum')"
+             [class.border-slate-100]="(policy.policyId ?? policy.id) !== aiService.suggestedPolicyId() && !policy.policyName.includes('Platinum')"
+             [class.ring-4]="(policy.policyId ?? policy.id) === aiService.suggestedPolicyId()"
+             [class.ring-[#8C1D40]/20]="(policy.policyId ?? policy.id) === aiService.suggestedPolicyId()">
           
           <!-- Tier Badge -->
-          @if (policy.policyName.includes('Platinum') || policy.policyName.includes('Shield')) {
+          @if ((policy.policyId ?? policy.id) === aiService.suggestedPolicyId()) {
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#1F2937] text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-tighter shadow-lg flex items-center gap-2">
+              <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+              AI Recommended
+            </div>
+          } @else if (policy.policyName.includes('Platinum') || policy.policyName.includes('Shield')) {
             <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#8C1D40] text-white text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-tighter shadow-lg">Premium Tier</div>
           }
 
@@ -73,7 +80,15 @@
             <div class="mb-6 grid grid-cols-1 gap-4">
               <div>
                 <p class="text-[9px] text-slate-400 font-black uppercase mb-1 tracking-widest">Max Payout</p>
-                <p class="text-lg font-black text-[#1F2937]">₹{{ (policy.maxCoverageAmount ?? 0) | number }}</p>
+                <div class="flex items-center gap-2">
+                  <p class="text-lg font-black text-[#1F2937]">₹{{ (policy.maxCoverageAmount ?? 0) | number }}</p>
+                  @if ((policy.maxCoverageAmount ?? 0) < (event()?.budget ?? 0)) {
+                    <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[8px] font-black uppercase tracking-tighter">Under-Covered</span>
+                  }
+                </div>
+                @if ((policy.maxCoverageAmount ?? 0) < (event()?.budget ?? 0)) {
+                  <p class="text-[9px] text-amber-600 font-bold mt-1 leading-tight">Note: This policy covers less than your event budget (₹{{ event().budget | number }}).</p>
+                }
               </div>
             </div>
 
@@ -107,9 +122,9 @@
                 <button disabled class="w-full py-4 rounded-2xl bg-slate-100 text-slate-400 font-black text-xs uppercase cursor-not-allowed">
                   Event Locked
                 </button>
-              } @else if (hasPaidPolicy()) {
+              } @else if (hasAnySubscription()) {
                 <button disabled class="w-full py-4 rounded-2xl bg-slate-100 text-slate-400 font-black text-xs uppercase cursor-not-allowed">
-                  Another Policy Active
+                  Another Policy Selected
                 </button>
               } @else {
                 <button (click)="subscribe(policy.policyId ?? policy.id)"
@@ -121,12 +136,6 @@
               }
             </div>
           </div>
-        </div>
-      } @empty {
-        <div class="col-span-full bg-amber-50 border border-amber-200 rounded-3xl p-12 text-center">
-          <svg class="w-12 h-12 text-amber-400 mx-auto mb-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-          <h3 class="text-lg font-black text-amber-900">Insufficient Standard Coverage</h3>
-          <p class="text-sm text-amber-700 font-medium max-w-md mx-auto">Your event budget exceeds all available standard policies for this category. Please contact an Underwriter for a custom high-value quote.</p>
         </div>
       }
     </div>

@@ -23,12 +23,16 @@ export class CreateEventComponent implements OnInit {
   readonly isSubmitting = signal(false);
   private selectedFile: File | null = null;
 
-  today = new Date().toISOString().split('T')[0];
+  minLeadDate = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 10);
+    return d.toISOString().split('T')[0];
+  })();
 
   readonly eventForm = this.fb.nonNullable.group({
     eventType: ['', Validators.required],
     eventName: ['', Validators.required],
-    eventDate: ['', [Validators.required, this.pastDateValidator]],
+    eventDate: ['', [Validators.required, this.leadTimeValidator]],
     location: ['', Validators.required],
     budget: ['', [Validators.required, Validators.min(1000)]],
     numberOfAttendees: ['', [Validators.required, Validators.min(1)]],
@@ -71,12 +75,13 @@ export class CreateEventComponent implements OnInit {
     });
   }
 
-  pastDateValidator(control: import('@angular/forms').AbstractControl) {
+  leadTimeValidator(control: import('@angular/forms').AbstractControl) {
     if (!control.value) return null;
     const selected = new Date(control.value);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return selected < today ? { pastDate: true } : null;
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() + 10);
+    minDate.setHours(0, 0, 0, 0);
+    return selected < minDate ? { leadTime: true } : null;
   }
 
   ngOnInit(): void {}

@@ -25,6 +25,25 @@
     </div>
   </header>
 
+  <!-- Scrolling Security Marquee -->
+  <div class="bg-[#8C1D40] py-2 overflow-hidden border-b border-black/10 flex items-center relative">
+    <div class="flex items-center gap-12 whitespace-nowrap animate-marquee flex-nowrap min-w-full">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
+        <span class="text-[10px] font-black text-white uppercase tracking-widest">Security Advisory:</span>
+      </div>
+      <span class="text-xs font-bold text-white/90">Policy must be subscribed at least 10 days before the event date.</span>
+      <span class="text-xs font-bold text-white/90">Ensure professional security guards are present for all outdoor concerts.</span>
+      <span class="text-xs font-bold text-white/90">Maintain valid Fire NOC documents for faster claim processing.</span>
+      <span class="text-xs font-bold text-white/90">CCTV coverage reduces risk score and premium by up to 15%.</span>
+      <!-- Duplicate for seamless loop -->
+      <span class="text-xs font-bold text-white/90">Policy must be subscribed at least 10 days before the event date.</span>
+      <span class="text-xs font-bold text-white/90">Ensure professional security guards are present for all outdoor concerts.</span>
+      <span class="text-xs font-bold text-white/90">Maintain valid Fire NOC documents for faster claim processing.</span>
+      <span class="text-xs font-bold text-white/90">CCTV coverage reduces risk score and premium by up to 15%.</span>
+    </div>
+  </div>
+
   <!-- Main content -->
   <main class="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
 
@@ -125,4 +144,77 @@
 
     </div>
   </main>
+
+  <!-- Floating Chatbot UI -->
+  <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <!-- Chat Window -->
+    <div *ngIf="isChatOpen()"
+      class="mb-4 w-80 sm:w-96 bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-100"
+      style="height: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.15)">
+      
+      <!-- Header -->
+      <div class="px-6 py-4 flex items-center justify-between"
+        style="background: linear-gradient(135deg, #8C1D40, #6E1733)">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <span class="text-white font-black tracking-tight">Gemini Assistant</span>
+        </div>
+        <button (click)="toggleChat()" class="text-white/60 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Messages -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
+        <div *ngFor="let msg of chatHistory()" class="flex" [ngClass]="{'justify-end': msg.sender === 'user'}">
+          <div class="max-w-[85%] px-4 py-2.5 rounded-2xl text-sm font-medium leading-relaxed"
+            [ngClass]="msg.sender === 'user' 
+              ? 'bg-[#1F2937] text-white rounded-br-none shadow-md' 
+              : 'bg-white text-slate-700 border border-slate-200 rounded-bl-none shadow-sm'">
+            {{ msg.text }}
+          </div>
+        </div>
+        <div *ngIf="isTyping()" class="flex">
+          <div class="bg-white border border-slate-200 px-4 py-2.5 rounded-2xl rounded-bl-none shadow-sm flex gap-1 items-center">
+            <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
+            <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+            <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="p-4 bg-white border-t border-slate-100 flex gap-2">
+        <input type="text" [(ngModel)]="currentMessage" (keyup.enter)="sendMessage()"
+          placeholder="Ask about coverage, claims..."
+          class="flex-1 bg-slate-50 border-none rounded-xl px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-[#8C1D40]/20 transition-all outline-none">
+        <button (click)="sendMessage()"
+          class="w-10 h-10 rounded-xl flex items-center justify-center text-white transition-all bg-[#1F2937] hover:bg-[#8C1D40] disabled:opacity-50"
+          [disabled]="!currentMessage.trim()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Toggle Button -->
+    <button (click)="toggleChat()"
+      class="w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-white transition-all transform hover:scale-110 active:scale-95"
+      [ngClass]="isChatOpen() ? 'bg-slate-800' : 'bg-[#8C1D40]'"
+      style="box-shadow: 0 10px 30px rgba(140,29,64,0.4)">
+      <svg *ngIf="!isChatOpen()" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+      </svg>
+      <svg *ngIf="isChatOpen()" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+  </div>
 </div>

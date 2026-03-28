@@ -130,6 +130,20 @@ export class ClaimsOfficerDashboardComponent implements OnInit {
     window.open(url, '_blank');
   }
 
+  downloadReport(claimId: number): void {
+    this.service.downloadClaimReport(claimId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Claim_Report_${claimId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => this.actionError.set('Failed to download report.')
+    });
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);

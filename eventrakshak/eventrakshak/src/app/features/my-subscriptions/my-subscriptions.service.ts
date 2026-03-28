@@ -13,4 +13,10 @@ export class MySubscriptionsService {
   payPremium(subscriptionId: number): Observable<any> {
     return this.http.post(`http://localhost:8080/subscriptions/${subscriptionId}/pay-premium`, {}, { responseType: 'text' as 'json' });
   }
+
+  downloadPolicyReport(subscriptionId: number): Observable<Blob> {
+    return this.http.get(`http://localhost:8080/api/reports/policy/${subscriptionId}`, {
+      responseType: 'blob'
+    });
+  }
 }

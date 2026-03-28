@@ -36,6 +36,11 @@ public class Claim {
 
     private String rejectionReason;
 
+    @Column(columnDefinition = "TEXT")
+    private String internalRemarks;
+
+    private String verificationChecklist;
+
     private LocalDateTime filedAt;
 
     private LocalDateTime resolvedAt;
@@ -45,6 +50,22 @@ public class Claim {
     private User resolvedBy;
 
     public Claim() {}
+
+    public String getInternalRemarks() {
+        return internalRemarks;
+    }
+
+    public void setInternalRemarks(String internalRemarks) {
+        this.internalRemarks = internalRemarks;
+    }
+
+    public String getVerificationChecklist() {
+        return verificationChecklist;
+    }
+
+    public void setVerificationChecklist(String verificationChecklist) {
+        this.verificationChecklist = verificationChecklist;
+    }
 
     public Long getClaimId() {
         return claimId;

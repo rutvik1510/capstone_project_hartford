@@ -23,9 +23,19 @@ public class CustomerSubscriptionResponse {
     private Boolean isLocked;
     private String status;
     private String rejectionReason;
+    private String overrideReason;
+    private String underwriterNotes;
     private LocalDateTime requestedAt;
 
     public CustomerSubscriptionResponse() {
+    }
+
+    public String getOverrideReason() {
+        return overrideReason;
+    }
+
+    public void setOverrideReason(String overrideReason) {
+        this.overrideReason = overrideReason;
     }
 
     public Boolean getIsLocked() {
@@ -130,6 +140,14 @@ public class CustomerSubscriptionResponse {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getUnderwriterNotes() {
+        return underwriterNotes;
+    }
+
+    public void setUnderwriterNotes(String underwriterNotes) {
+        this.underwriterNotes = underwriterNotes;
     }
 
     public Double getRiskPercentage() {

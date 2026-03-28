@@ -95,14 +95,17 @@ class EventServiceTest {
 
     @Test
     void getEventByIdDTO_Success() {
+        User user = new User();
+        user.setEmail("user@test.com");
         Event event = new Event();
         event.setEventId(1L);
         event.setEventName("Existing Event");
+        event.setUser(user);
 
         when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
         when(subscriptionRepository.findByEvent_EventId(1L)).thenReturn(new ArrayList<>());
 
-        EventResponse response = eventService.getEventByIdDTO(1L);
+        EventResponse response = eventService.getEventByIdDTO(1L, "user@test.com");
 
         assertEquals("Existing Event", response.getEventName());
         verify(eventRepository, times(1)).findById(1L);
@@ -113,7 +116,7 @@ class EventServiceTest {
         when(eventRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            eventService.getEventByIdDTO(99L);
+            eventService.getEventByIdDTO(99L, "any@test.com");
         });
     }
 

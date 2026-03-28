@@ -78,8 +78,9 @@ public class EventController {
      * @return Event details
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<EventResponse>> getEventById(@PathVariable Long id) {
-        EventResponse event = eventService.getEventByIdDTO(id);
+    public ResponseEntity<ApiResponse<EventResponse>> getEventById(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        EventResponse event = eventService.getEventByIdDTO(id, email);
         return ResponseEntity.ok(ApiResponse.success("Event retrieved successfully", event));
     }
 

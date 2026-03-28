@@ -207,122 +207,134 @@
 
       <!-- ===== DASHBOARD VIEW ===== -->
       @if (activeView() === 'dashboard') {
-        <div class="mb-5">
-          <h2 class="text-xl font-bold text-slate-800">Platform Overview</h2>
-          <p class="text-sm text-slate-500 mt-0.5">Key success metrics and real-time system performance</p>
+        <div class="mb-10">
+          <h2 class="text-4xl font-black text-slate-800 tracking-tight">Platform Command Center</h2>
+          <p class="text-lg text-slate-500 mt-2 font-medium">Real-time operational metrics and financial performance oversight.</p>
         </div>
 
-        <!-- ROW 1: SUCCESS METRICS -->
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
+        <!-- ROW 1: CRITICAL STATS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           
-          <!-- Total Events -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div class="flex items-center gap-4 mb-2">
-              <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          <!-- Revenue Card -->
+          <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 hover:scale-105 transition-transform duration-300">
+            <div class="flex items-center justify-between mb-6">
+              <div class="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center">
+                <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3 1.343 3 3-1.343 3-3 3m0-12c1.1 0 2 .9 2 2m-2-2c-1.1 0-2 .9-2 2m2-2V7m0 10v1m4-10a2 2 0 00-2-2h-4a2 2 0 00-2 2v10a2 2 0 002 2h4a2 2 0 002-2V7z"/></svg>
               </div>
-              <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Events</span>
+              <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full">Active Revenue</span>
             </div>
-            <p class="text-2xl font-black text-[#1F2937]">{{ stats()?.totalEvents ?? 0 }}</p>
+            <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Total Collections</p>
+            <p class="text-4xl font-black text-slate-900">₹{{ (stats()?.totalRevenue ?? 0) | number:'1.0-0' }}</p>
           </div>
 
-          <!-- Successful Claims -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div class="flex items-center gap-4 mb-2">
-              <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+          <!-- Payouts Card -->
+          <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 hover:scale-105 transition-transform duration-300">
+            <div class="flex items-center justify-between mb-6">
+              <div class="w-14 h-14 rounded-2xl bg-rose-100 flex items-center justify-center">
+                <svg class="w-8 h-8 text-rose-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               </div>
-              <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Successful Claims</span>
+              <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest bg-rose-50 px-3 py-1 rounded-full">Total Payouts</span>
             </div>
-            <p class="text-2xl font-black text-[#1F2937]">{{ stats()?.successfulClaims ?? 0 }}</p>
+            <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Claims Settled</p>
+            <p class="text-4xl font-black text-slate-900">₹{{ (stats()?.totalPayouts ?? 0) | number:'1.0-0' }}</p>
           </div>
 
-          <!-- Total Users -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div class="flex items-center gap-4 mb-2">
-              <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+          <!-- Events Card -->
+          <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 hover:scale-105 transition-transform duration-300">
+            <div class="flex items-center justify-between mb-6">
+              <div class="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               </div>
-              <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Users</span>
+              <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full">Event Count</span>
             </div>
-            <p class="text-2xl font-black text-[#1F2937]">{{ stats()?.totalUsers ?? 0 }}</p>
+            <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Registered Events</p>
+            <p class="text-4xl font-black text-slate-900">{{ stats()?.totalEvents ?? 0 }}</p>
           </div>
 
-          <!-- Revenue -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div class="flex items-center gap-4 mb-2">
-              <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3 1.343 3 3-1.343 3-3 3m0-12c1.1 0 2 .9 2 2m-2-2c-1.1 0-2 .9-2 2m2-2V7m0 10v1m4-10a2 2 0 00-2-2h-4a2 2 0 00-2 2v10a2 2 0 002 2h4a2 2 0 002-2V7z"/></svg>
+          <!-- Users Card -->
+          <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 hover:scale-105 transition-transform duration-300">
+            <div class="flex items-center justify-between mb-6">
+              <div class="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center">
+                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
               </div>
-              <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Revenue</span>
+              <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full">User Base</span>
             </div>
-            <p class="text-2xl font-black text-[#1F2937]">₹{{ (stats()?.totalRevenue ?? 0) | number:'1.0-0' }}</p>
+            <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Active Accounts</p>
+            <p class="text-4xl font-black text-slate-900">{{ stats()?.totalUsers ?? 0 }}</p>
           </div>
 
-          <!-- Payouts -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div class="flex items-center gap-4 mb-2">
-              <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
-                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              </div>
-              <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Payouts</span>
-            </div>
-            <p class="text-2xl font-black text-[#1F2937]">₹{{ (stats()?.totalPayouts ?? 0) | number:'1.0-0' }}</p>
-          </div>
         </div>
 
-        <!-- ROW 2: OPERATIONAL METRICS -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- ROW 2: STAFF OPERATIONS -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           
-          <!-- Active Policies -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-start gap-4">
-            <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-              <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-            </div>
-            <div>
-              <p class="text-sm font-medium text-slate-500">Live Policies</p>
-              <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ stats()?.activePolicies || 0 }}</h3>
-            </div>
-          </div>
-
-          <!-- Pending Review -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-start gap-4">
-            <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-              <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            </div>
-            <div>
-              <p class="text-sm font-medium text-slate-500">Pending Subs</p>
-              <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ stats()?.pendingSubscriptions || 0 }}</h3>
-            </div>
-          </div>
-
-          <!-- Pending Claims -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-start gap-4">
-            <div class="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
-              <svg class="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-            </div>
-            <div>
-              <p class="text-sm font-medium text-slate-500">Active Claims</p>
-              <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ stats()?.pendingClaims || 0 }}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 gap-6">
-          <div class="bg-gradient-to-r from-[#8C1D40] to-[#374151] rounded-3xl shadow-xl p-8 text-white overflow-hidden relative">
-            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div>
-                <h3 class="font-black text-2xl mb-2">Welcome Back, Administrator</h3>
-                <p class="text-white/80 text-base font-medium max-w-2xl">The platform is currently monitoring {{ stats()?.totalEvents || 0 }} events with a user base of {{ stats()?.totalUsers || 0 }}. Use the sidebar to manage policies or assign staff members.</p>
+          <!-- Underwriting Operations -->
+          <div class="bg-slate-900 rounded-3xl p-10 text-white shadow-2xl relative overflow-hidden">
+            <div class="relative z-10">
+              <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
+                  <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                </div>
+                <h3 class="text-2xl font-black uppercase tracking-tight">Underwriting Desk</h3>
               </div>
-              <button (click)="setView('policies')" class="shrink-0 bg-white text-[#8C1D40] px-8 py-3 rounded-xl text-sm font-black uppercase tracking-widest hover:bg-slate-100 transition-all shadow-lg active:scale-95">
-                Manage Policy Catalog
+              
+              <div class="grid grid-cols-2 gap-10">
+                <div>
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Live Policies</p>
+                  <p class="text-5xl font-black text-white">{{ stats()?.activePolicies || 0 }}</p>
+                </div>
+                <div>
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pending Review</p>
+                  <p class="text-5xl font-black text-amber-400">{{ stats()?.pendingSubscriptions || 0 }}</p>
+                </div>
+              </div>
+              
+              <button (click)="setView('view-underwriters')" class="mt-10 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-blue-900/50">
+                Manage Underwriters
               </button>
             </div>
-            <!-- Decorative circles -->
-            <div class="absolute -right-10 -bottom-10 w-60 h-60 rounded-full bg-white/5"></div>
-            <div class="absolute right-20 top-0 w-20 h-20 rounded-full bg-white/5"></div>
+            <!-- Glow effect -->
+            <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl"></div>
           </div>
+
+          <!-- Claims Operations -->
+          <div class="bg-white rounded-3xl p-10 border border-slate-200 shadow-xl relative overflow-hidden">
+            <div class="relative z-10">
+              <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center border border-rose-100">
+                  <svg class="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                </div>
+                <h3 class="text-2xl font-black uppercase tracking-tight text-slate-900">Claims Handling</h3>
+              </div>
+              
+              <div class="grid grid-cols-2 gap-10">
+                <div>
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Successful Claims</p>
+                  <p class="text-5xl font-black text-slate-900">{{ stats()?.successfulClaims || 0 }}</p>
+                </div>
+                <div>
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Active Disputes</p>
+                  <p class="text-5xl font-black text-rose-600">{{ stats()?.pendingClaims || 0 }}</p>
+                </div>
+              </div>
+              
+              <button (click)="setView('view-claims-officers')" class="mt-10 px-8 py-3 bg-[#1F2937] hover:bg-[#8C1D40] text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg">
+                Manage Claims Staff
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="bg-gradient-to-br from-[#8C1D40] to-[#1F2937] rounded-[40px] p-12 text-white shadow-2xl relative overflow-hidden group">
+          <div class="relative z-10">
+            <h3 class="text-4xl font-black mb-4 tracking-tighter">System Health: Optimal</h3>
+            <p class="text-xl text-white/70 font-medium max-w-3xl leading-relaxed">
+              All insurance modules are operational. Database sync is active. The platform is currently protecting assets worth over <span class="text-white font-black underline decoration-indigo-500">₹{{ (stats()?.totalRevenue ?? 0) * 10 | number:'1.0-0' }}+</span> across all registered events.
+            </p>
+          </div>
+          <!-- Abstract shapes -->
+          <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-20 -mt-20 group-hover:scale-110 transition-transform duration-700"></div>
         </div>
       }
 

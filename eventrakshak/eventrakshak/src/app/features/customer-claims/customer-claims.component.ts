@@ -10,9 +10,13 @@ export interface CustomerClaim {
   claimAmount: number;
   incidentDate?: string;
   rejectionReason?: string;
+  internalRemarks?: string;
+  description?: string;
+  evidenceDocPath?: string;
   approvedAmount?: number;
   filedAt: string;
   status: string;
+  assignedOfficerName?: string;
 }
 
 @Component({
@@ -96,23 +100,44 @@ export class CustomerClaimsComponent implements OnInit {
     }
   }
 
-  stageClass(status: string, stage: 'filed' | 'review' | 'outcome'): string {
+  stageProgress(status: string): number {
     const s = status?.toUpperCase();
-    if (stage === 'filed') return 'bg-green-500 text-white';
-    if (stage === 'review') {
-      if (s === 'PENDING') return 'bg-yellow-400 text-white';
-      return 'bg-green-500 text-white';
-    }
-    if (s === 'APPROVED' || s === 'COLLECTED' || s === 'PAID' || s === 'SETTLED') return 'bg-green-500 text-white';
-    if (s === 'REJECTED') return 'bg-red-500 text-white';
-    return 'bg-slate-200 text-slate-400';
+    if (s === 'COLLECTED' || s === 'PAID' || s === 'SETTLED') return 3;
+    if (s === 'APPROVED' || s === 'REJECTED') return 2;
+    return 1;
   }
 
-  outcomeLabel(status: string): string {
-    const s = status?.toUpperCase();
-    if (s === 'REJECTED') return 'Rejected';
-    if (s === 'COLLECTED' || s === 'PAID' || s === 'SETTLED') return 'Collected';
-    return 'Approved';
+  viewDocument(path: string | undefined): void {
+    if (!path) {
+      alert('No evidence document provided.');
+      return;
+    }
+    const url = path.startsWith('http') ? path : `http://localhost:8080/uploads/${path}`;
+    window.open(url, '_blank');
+  }
+
+  downloadReport(claimId: number): void {
+    this.service.downloadClaimReport(claimId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Claim_Report_${claimId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => this.errorMessage.set('Failed to download claim report.')
+    });
+  }
+
+  viewReport(claimId: number): void {
+    this.service.downloadClaimReport(claimId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      },
+      error: () => this.errorMessage.set('Failed to view report.')
+    });
   }
 
   goBack(): void {

@@ -129,8 +129,8 @@ public class PolicySubscriptionService {
 
         // --- DUPLICATE/PAID CHECK ---
         for (PolicySubscription s : eventSubs) {
-            if (s.getStatus() == SubscriptionStatus.PAID) {
-                throw new InvalidRequestException("An active (paid) policy already exists for this event. You cannot subscribe to multiple policies for the same event.");
+            if (s.getStatus() != SubscriptionStatus.REJECTED) {
+                throw new InvalidRequestException("An active or pending policy subscription already exists for this event. You can only have one policy per event.");
             }
         }
 
@@ -138,9 +138,16 @@ public class PolicySubscriptionService {
         Policy policy = policyRepository.findById(policyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Policy not found"));
 
-        // Validate event belongs to logged in user
+        // Validate subscription belongs to user
         if (!event.getUser().getUserId().equals(user.getUserId())) {
             throw new UnauthorizedAccessException("You do not have permission to create subscription for this event");
+        }
+
+        // --- 10-DAY LEAD TIME VALIDATION ---
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate eventDate = event.getEventDate();
+        if (eventDate.isBefore(today.plusDays(10))) {
+            throw new InvalidRequestException("Policy must be subscribed at least 10 days before the event date (" + eventDate + "). Contact support for exceptions.");
         }
 
         // Check for existing subscription to prevent duplicates
@@ -257,7 +264,7 @@ public class PolicySubscriptionService {
         return convertToDTO(subscription);
     }
 
-    public SubscriptionResponseDTO approveSubscription(Long id, String email, Double overrideAmount, String reason) {
+    public SubscriptionResponseDTO approveSubscription(Long id, String email, Double overrideAmount, String reason, String notes) {
         // Fetch subscription
         PolicySubscription subscription = subscriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
@@ -276,6 +283,7 @@ public class PolicySubscriptionService {
         subscription.setStatus(SubscriptionStatus.APPROVED);
         subscription.setApprovedAt(LocalDateTime.now());
         subscription.setApprovedBy(user);
+        subscription.setUnderwriterNotes(notes);
         
         if (overrideAmount != null) {
             subscription.setPremiumOverrideAmount(overrideAmount);
@@ -293,7 +301,7 @@ public class PolicySubscriptionService {
         return convertToDTO(subscription);
     }
 
-    public SubscriptionResponseDTO rejectSubscription(Long id, String email, String reason) {
+    public SubscriptionResponseDTO rejectSubscription(Long id, String email, String reason, String notes) {
         // Fetch subscription
         PolicySubscription subscription = subscriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
@@ -313,6 +321,7 @@ public class PolicySubscriptionService {
         subscription.setApprovedAt(LocalDateTime.now());
         subscription.setApprovedBy(user);
         subscription.setRejectionReason(reason);
+        subscription.setUnderwriterNotes(notes);
 
         subscriptionRepository.save(subscription);
 
@@ -414,6 +423,7 @@ public class PolicySubscriptionService {
         dto.setRiskPercentage(subscription.getRiskPercentage());
         dto.setStatus(subscription.getStatus().toString());
         dto.setRejectionReason(subscription.getRejectionReason());
+        dto.setUnderwriterNotes(subscription.getUnderwriterNotes());
         dto.setAssignedUnderwriterName(subscription.getAssignedUnderwriter() != null ? 
             subscription.getAssignedUnderwriter().getFullName() : null);
         
@@ -446,6 +456,8 @@ public class PolicySubscriptionService {
         dto.setEventRisk(subscription.getEventRisk());
         dto.setWeatherRisk(subscription.getWeatherRisk());
         dto.setRejectionReason(subscription.getRejectionReason());
+        dto.setOverrideReason(subscription.getOverrideReason());
+        dto.setUnderwriterNotes(subscription.getUnderwriterNotes());
         
         // Check if claim exists
         boolean hasClaim = claimsRepository.existsByPolicySubscription_SubscriptionId(subscription.getSubscriptionId());
@@ -481,9 +493,19 @@ public class PolicySubscriptionService {
         return dto;
     }
 
-    public UnderwriterSubscriptionDetailsResponse getSubscriptionDetails(Long subscriptionId) {
+    public UnderwriterSubscriptionDetailsResponse getSubscriptionDetails(Long subscriptionId, String email) {
         PolicySubscription subscription = subscriptionRepository.findSubscriptionWithDetails(subscriptionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Security Check: Customer can only see their own. 
+        // Underwriters and Admins can see all (role checking usually handled in controller or by checking assignment here)
+        boolean isCustomer = user.getRoles().stream().anyMatch(r -> r.getRoleName().equals("CUSTOMER"));
+        if (isCustomer && !subscription.getEvent().getUser().getEmail().equals(email)) {
+            throw new UnauthorizedAccessException("You do not have permission to view this subscription");
+        }
 
         Event event = subscription.getEvent();
         Policy policy = subscription.getPolicy();
@@ -507,6 +529,7 @@ public class PolicySubscriptionService {
         dto.setRiskPercentage(subscription.getRiskPercentage());
         dto.setStatus(subscription.getStatus().toString());
         dto.setRejectionReason(subscription.getRejectionReason());
+        dto.setUnderwriterNotes(subscription.getUnderwriterNotes());
         dto.setPremiumAmount(subscription.getPremiumAmount());
         
         // Populate from RiskDetails entity if available

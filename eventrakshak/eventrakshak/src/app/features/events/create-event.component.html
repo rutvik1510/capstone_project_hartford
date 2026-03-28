@@ -55,7 +55,11 @@
             <label class="block text-sm font-medium text-slate-600 mb-1">Event Date <span class="text-red-500">*</span></label>
             <input type="date" formControlName="eventDate"
               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8C1D40]"
-              [min]="today" />
+              [min]="minLeadDate" />
+            <p class="text-[10px] text-slate-400 mt-1 italic">Events must be scheduled at least 10 days in advance for insurance processing.</p>
+            @if (eventForm.get('eventDate')?.errors?.['leadTime'] && eventForm.get('eventDate')?.touched) {
+              <p class="text-[10px] text-red-500 font-bold mt-1 uppercase">Date must be at least 10 days from today</p>
+            }
           </div>
 
           <div>

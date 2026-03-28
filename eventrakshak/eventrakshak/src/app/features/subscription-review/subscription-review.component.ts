@@ -1,7 +1,9 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SubscriptionReviewService } from './subscription-review.service';
+import { AiService } from '../customer-dashboard/ai.service';
 
 export interface SubscriptionDetail {
   subscriptionId: number;
@@ -19,6 +21,7 @@ export interface SubscriptionDetail {
   riskFactors?: string;
   status: string;
   rejectionReason?: string;
+  underwriterNotes?: string;
   assignedUnderwriterName?: string;
   location?: string;
   eventDate?: string;
@@ -46,16 +49,19 @@ export interface SubscriptionDetail {
   hasFireNOC?: boolean;
   hasOnSiteFireSafety?: boolean;
   safetyComplianceDocPath?: string;
+  premiumOverrideAmount?: number;
+  overrideReason?: string;
 }
 
 @Component({
   selector: 'app-subscription-review',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './subscription-review.component.html',
 })
 export class SubscriptionReviewComponent implements OnInit {
   private readonly service = inject(SubscriptionReviewService);
+  private readonly aiService = inject(AiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -68,6 +74,15 @@ export class SubscriptionReviewComponent implements OnInit {
   
   readonly showRejectForm = signal(false);
   readonly rejectionReason = signal('');
+  readonly underwriterNotes = signal('');
+
+  readonly showAdjustmentForm = signal(false);
+  readonly adjustedPremium = signal<number | null>(null);
+  readonly adjustmentReason = signal('');
+
+  // Smart Summary
+  readonly docSummary = signal<string | null>(null);
+  readonly isAnalyzing = signal(false);
 
   private subscriptionId!: number;
 
@@ -81,13 +96,31 @@ export class SubscriptionReviewComponent implements OnInit {
     this.isLoading.set(true);
     this.service.getDetails(this.subscriptionId).subscribe({
       next: (res: any) => {
-        this.sub.set(res.data ?? res);
+        const data = res.data ?? res;
+        this.sub.set(data);
+        this.adjustedPremium.set(data.premiumAmount);
+        this.underwriterNotes.set(data.underwriterNotes || '');
         this.isLoading.set(false);
       },
       error: () => {
         this.errorMessage.set('Failed to load subscription details.');
         this.isLoading.set(false);
       },
+    });
+  }
+
+  fetchDocSummary(): void {
+    this.isAnalyzing.set(true);
+    this.docSummary.set(null);
+    this.aiService.analyzeSubscriptionDoc(this.subscriptionId).subscribe({
+      next: (res: any) => {
+        this.docSummary.set(res.data || res);
+        this.isAnalyzing.set(false);
+      },
+      error: () => {
+        this.docSummary.set('Failed to generate summary.');
+        this.isAnalyzing.set(false);
+      }
     });
   }
 
@@ -102,7 +135,14 @@ export class SubscriptionReviewComponent implements OnInit {
 
   toggleRejectForm(): void {
     this.showRejectForm.update(v => !v);
+    this.showAdjustmentForm.set(false);
     this.rejectionReason.set('');
+    this.actionError.set(null);
+  }
+
+  toggleAdjustmentForm(): void {
+    this.showAdjustmentForm.update(v => !v);
+    this.showRejectForm.set(false);
     this.actionError.set(null);
   }
 
@@ -111,13 +151,44 @@ export class SubscriptionReviewComponent implements OnInit {
     this.rejectionReason.set(target.value);
   }
 
+  onPremiumInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.adjustedPremium.set(Number(target.value));
+  }
+
+  onAdjustmentReasonInput(event: Event): void {
+    const target = event.target as HTMLTextAreaElement;
+    this.adjustmentReason.set(target.value);
+  }
+
   approve(): void {
     this.processingAction.set('approve');
     this.actionError.set(null);
     this.successMessage.set(null);
-    this.service.approve(this.subscriptionId).subscribe({
+
+    const payload: any = {
+      underwriterNotes: this.underwriterNotes()
+    };
+
+    if (this.showAdjustmentForm()) {
+      if (!this.adjustedPremium() || this.adjustedPremium()! <= 0) {
+        this.actionError.set('Please enter a valid premium amount.');
+        this.processingAction.set(null);
+        return;
+      }
+      if (!this.adjustmentReason().trim()) {
+        this.actionError.set('Please provide a reason for the price adjustment.');
+        this.processingAction.set(null);
+        return;
+      }
+      payload.premiumOverrideAmount = this.adjustedPremium();
+      payload.overrideReason = this.adjustmentReason();
+    }
+
+    this.service.approve(this.subscriptionId, payload).subscribe({
       next: () => {
         this.processingAction.set(null);
+        this.showAdjustmentForm.set(false);
         this.successMessage.set('Subscription approved successfully.');
         this.load();
       },
@@ -138,7 +209,7 @@ export class SubscriptionReviewComponent implements OnInit {
     this.processingAction.set('reject');
     this.actionError.set(null);
     this.successMessage.set(null);
-    this.service.reject(this.subscriptionId, reason).subscribe({
+    this.service.reject(this.subscriptionId, reason, this.underwriterNotes()).subscribe({
       next: () => {
         this.processingAction.set(null);
         this.showRejectForm.set(false);

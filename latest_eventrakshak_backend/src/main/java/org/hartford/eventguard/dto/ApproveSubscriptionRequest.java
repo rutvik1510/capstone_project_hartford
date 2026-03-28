@@ -3,8 +3,17 @@ package org.hartford.eventguard.dto;
 public class ApproveSubscriptionRequest {
     private Double premiumOverrideAmount;
     private String overrideReason;
+    private String underwriterNotes;
 
     public ApproveSubscriptionRequest() {}
+
+    public String getUnderwriterNotes() {
+        return underwriterNotes;
+    }
+
+    public void setUnderwriterNotes(String underwriterNotes) {
+        this.underwriterNotes = underwriterNotes;
+    }
 
     public Double getPremiumOverrideAmount() {
         return premiumOverrideAmount;

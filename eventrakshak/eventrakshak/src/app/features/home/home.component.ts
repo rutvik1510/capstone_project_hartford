@@ -43,8 +43,8 @@ export class HomeComponent implements OnInit {
 
   readonly taglines = [
     {
-      icon: '🤖',
-      title: 'AI-Powered Risk Assessment',
+      icon: '🛡️',
+      title: 'Expert Risk Assessment',
       description:
         'We analyze event risk using crowd size, security level, weather conditions, and infrastructure factors.',
     },
@@ -55,7 +55,7 @@ export class HomeComponent implements OnInit {
         'Get real-time insurance quotes tailored to your event type, size, and location.',
     },
     {
-      icon: '🛡️',
+      icon: '✅',
       title: 'End-to-End Event Protection',
       description:
         'From underwriting approval to claims processing, we handle everything seamlessly.',
@@ -82,7 +82,7 @@ export class HomeComponent implements OnInit {
       icon: '🌦️',
       title: 'Risk & Weather Analysis',
       description:
-        'Our AI engine evaluates risk using weather data, crowd dynamics, and security factors.',
+        'Our system evaluates risk using weather data, crowd dynamics, and security factors.',
     },
     {
       step: '04',

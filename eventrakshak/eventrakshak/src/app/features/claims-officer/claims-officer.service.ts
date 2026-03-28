@@ -27,7 +27,17 @@ export class ClaimsOfficerService {
     return this.http.put(`${this.base}/${id}/approve`, data);
   }
 
-  rejectClaim(id: number, reason: string): Observable<any> {
-    return this.http.put(`${this.base}/${id}/reject`, { reason });
+  rejectClaim(id: number, reason: string, internalRemarks?: string): Observable<any> {
+    return this.http.put(`${this.base}/${id}/reject`, { reason, internalRemarks });
+  }
+
+  updateClaimRemarks(id: number, internalRemarks: string, verificationChecklist: string): Observable<any> {
+    return this.http.put(`${this.base}/${id}/update-remarks`, { internalRemarks, verificationChecklist });
+  }
+
+  downloadClaimReport(claimId: number): Observable<Blob> {
+    return this.http.get(`http://localhost:8080/api/reports/claim/${claimId}`, {
+      responseType: 'blob'
+    });
   }
 }

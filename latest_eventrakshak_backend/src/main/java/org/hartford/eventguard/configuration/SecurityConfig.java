@@ -82,6 +82,8 @@ public class SecurityConfig {
                         .requestMatchers("/subscriptions", "/subscriptions/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/claims", "/claims/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/policies", "/policies/**").hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers("/api/ai/**").hasAnyRole("CUSTOMER", "ADMIN", "UNDERWRITER", "CLAIMS_OFFICER")
+                        .requestMatchers("/api/reports/**").hasAnyRole("CUSTOMER", "ADMIN", "UNDERWRITER", "CLAIMS_OFFICER")
 
                         .anyRequest().authenticated()
                 )

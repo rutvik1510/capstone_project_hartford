@@ -20,6 +20,7 @@ public class UnderwriterSubscriptionDetailsResponse {
     private String riskFactors;
     private String status;
     private String rejectionReason;
+    private String underwriterNotes;
     private String assignedUnderwriterName;
 
     // Event details
@@ -182,6 +183,14 @@ public class UnderwriterSubscriptionDetailsResponse {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getUnderwriterNotes() {
+        return underwriterNotes;
+    }
+
+    public void setUnderwriterNotes(String underwriterNotes) {
+        this.underwriterNotes = underwriterNotes;
     }
 
     public String getAssignedUnderwriterName() {

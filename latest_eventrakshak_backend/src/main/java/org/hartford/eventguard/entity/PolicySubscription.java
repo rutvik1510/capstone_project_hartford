@@ -50,6 +50,9 @@ public class PolicySubscription {
 
     private String rejectionReason;
 
+    @Column(columnDefinition = "TEXT")
+    private String underwriterNotes;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_underwriter_id")
     private User assignedUnderwriter;
@@ -203,6 +206,14 @@ public class PolicySubscription {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getUnderwriterNotes() {
+        return underwriterNotes;
+    }
+
+    public void setUnderwriterNotes(String underwriterNotes) {
+        this.underwriterNotes = underwriterNotes;
     }
 
     public User getAssignedUnderwriter() {

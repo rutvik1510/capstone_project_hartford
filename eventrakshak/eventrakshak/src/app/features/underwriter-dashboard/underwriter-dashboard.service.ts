@@ -22,4 +22,10 @@ export class UnderwriterDashboardService {
   rejectSubscription(id: number): Observable<any> {
     return this.http.put(`${this.base}/${id}/reject`, {});
   }
+
+  downloadPolicyReport(subscriptionId: number): Observable<Blob> {
+    return this.http.get(`http://localhost:8080/api/reports/policy/${subscriptionId}`, {
+      responseType: 'blob'
+    });
+  }
 }

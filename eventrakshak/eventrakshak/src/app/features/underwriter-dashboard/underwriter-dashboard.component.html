@@ -125,6 +125,12 @@
                           PDF
                         </button>
                       }
+                      @if (sub.status === 'APPROVED' || sub.status === 'PAID') {
+                        <button (click)="downloadReport(sub.subscriptionId)"
+                          class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold uppercase tracking-tighter transition-colors">
+                          Report
+                        </button>
+                      }
                     </div>
                   </td>
                 </tr>

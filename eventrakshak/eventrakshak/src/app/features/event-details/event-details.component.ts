@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { EventDetailsService } from './event-details.service';
+import { AiService } from '../customer-dashboard/ai.service';
 
 @Component({
   selector: 'app-event-details',
@@ -13,12 +14,14 @@ export class EventDetailsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly detailsService = inject(EventDetailsService);
+  protected readonly aiService = inject(AiService);
 
   readonly eventId = signal(Number(this.route.snapshot.paramMap.get('id')));
   readonly event = signal<any>(null);
   readonly policies = signal<any[]>([]);
   readonly subscribedPolicyIds = signal<Set<number>>(new Set());
   readonly hasPaidPolicy = signal(false);
+  readonly hasAnySubscription = signal(false);
   readonly isEventLocked = signal(false);
   
   readonly isLoading = signal(true);
@@ -28,8 +31,7 @@ export class EventDetailsComponent implements OnInit {
   readonly subscribeError = signal<string | null>(null);
 
   readonly availablePolicies = computed(() => {
-    const budget = this.event()?.budget ?? 0;
-    return this.policies().filter(p => (p.maxCoverageAmount ?? 0) >= budget);
+    return this.policies();
   });
 
   ngOnInit(): void {
@@ -54,6 +56,10 @@ export class EventDetailsComponent implements OnInit {
           
           const ids = new Set<number>(eventSubs.map((s: any) => s.policy?.policyId ?? s.policyId));
           this.subscribedPolicyIds.set(ids);
+
+          // Check for any active (not rejected) subscription
+          const activeSub = eventSubs.find((s: any) => s.status?.toUpperCase() !== 'REJECTED');
+          this.hasAnySubscription.set(!!activeSub);
 
           // Check for paid policy
           const paidPolicy = eventSubs.find((s: any) => 

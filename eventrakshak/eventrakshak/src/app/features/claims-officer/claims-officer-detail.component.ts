@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ClaimsOfficerService } from './claims-officer.service';
+import { AiService } from '../customer-dashboard/ai.service';
 
 export interface ClaimDetail {
   claimId: number;
@@ -35,6 +36,8 @@ export interface ClaimDetail {
   humidity?: number;
   windSpeed?: number;
   weatherCondition?: string;
+  internalRemarks?: string;
+  verificationChecklist?: string;
 }
 
 @Component({
@@ -45,6 +48,7 @@ export interface ClaimDetail {
 })
 export class ClaimsOfficerDetailComponent implements OnInit {
   private readonly service = inject(ClaimsOfficerService);
+  private readonly aiService = inject(AiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -59,6 +63,18 @@ export class ClaimsOfficerDetailComponent implements OnInit {
   readonly showRejectForm = signal(false);
   readonly rejectionReason = signal('');
 
+  // Internal Audit Features
+  readonly internalRemarks = signal('');
+  readonly checklist = signal({
+    evidenceMatches: false,
+    noNegligence: false,
+    withinCoverageLimit: false
+  });
+
+  // Smart Summary
+  readonly docSummary = signal<string | null>(null);
+  readonly isAnalyzing = signal(false);
+
   ngOnInit(): void {
     this.load();
   }
@@ -68,20 +84,60 @@ export class ClaimsOfficerDetailComponent implements OnInit {
     this.errorMessage.set(null);
     this.service.getClaimDetails(this.claimId).subscribe({
       next: (res: any) => {
-        this.claim.set(res.data ?? res);
+        const data = res.data || res;
+        this.claim.set(data);
+        this.internalRemarks.set(data.internalRemarks || '');
+        if (data.verificationChecklist) {
+          try {
+            this.checklist.set(JSON.parse(data.verificationChecklist));
+          } catch (e) {
+            console.error('Failed to parse checklist JSON', e);
+          }
+        }
         this.isLoading.set(false);
       },
-      error: () => {
-        this.errorMessage.set('Failed to load claim details. Please try again.');
+      error: (err: any) => {
+        this.errorMessage.set(err?.error?.message ?? 'Failed to load claim details.');
         this.isLoading.set(false);
       },
     });
   }
 
+  fetchDocSummary(): void {
+    this.isAnalyzing.set(true);
+    this.docSummary.set(null);
+    this.aiService.analyzeClaimDoc(this.claimId).subscribe({
+      next: (res: any) => {
+        this.docSummary.set(res.data || res);
+        this.isAnalyzing.set(false);
+      },
+      error: () => {
+        this.docSummary.set('Failed to generate summary.');
+        this.isAnalyzing.set(false);
+      }
+    });
+  }
+
+  statusClass(status: string): string {
+    switch (status?.toUpperCase()) {
+      case 'PENDING': return 'bg-amber-100 text-amber-700 border border-amber-200';
+      case 'APPROVED': return 'bg-green-100 text-green-700 border border-green-200';
+      case 'REJECTED': return 'bg-red-100 text-red-700 border border-red-200';
+      default: return 'bg-slate-100 text-slate-700 border border-slate-200';
+    }
+  }
+
+  riskLevelClass(level: string | undefined): string {
+    switch (level?.toUpperCase()) {
+      case 'LOW': return 'bg-green-100 text-green-700';
+      case 'MEDIUM': return 'bg-amber-100 text-amber-700';
+      case 'HIGH': return 'bg-red-100 text-red-700';
+      default: return 'bg-slate-100 text-slate-700';
+    }
+  }
+
   toggleRejectForm(): void {
     this.showRejectForm.update(v => !v);
-    this.rejectionReason.set('');
-    this.actionError.set(null);
   }
 
   onReasonInput(event: Event): void {
@@ -89,42 +145,76 @@ export class ClaimsOfficerDetailComponent implements OnInit {
     this.rejectionReason.set(target.value);
   }
 
-  riskLevelClass(level: string | undefined): string {
-    switch (level?.toUpperCase()) {
-      case 'LOW':    return 'bg-green-100 text-green-700';
-      case 'MEDIUM': return 'bg-yellow-100 text-yellow-700';
-      default:       return 'bg-red-100 text-red-700';
-    }
+  updateInternalRemarks(event: Event): void {
+    const target = event.target as HTMLTextAreaElement;
+    this.internalRemarks.set(target.value);
   }
 
-  statusClass(status: string): string {
-    switch (status?.toUpperCase()) {
-      case 'APPROVED': return 'bg-green-100 text-green-700';
-      case 'REJECTED': return 'bg-red-100 text-red-700';
-      case 'COLLECTED': return 'bg-blue-100 text-blue-700';
-      default:         return 'bg-yellow-100 text-yellow-700';
-    }
+  toggleChecklist(key: keyof ReturnType<typeof this.checklist>): void {
+    this.checklist.update(c => ({ ...c, [key]: !c[key] }));
+  }
+
+  isChecklistComplete(): boolean {
+    const c = this.checklist();
+    return c.evidenceMatches && c.noNegligence && c.withinCoverageLimit;
+  }
+
+  saveRemarks(): void {
+    this.processingAction.set('save');
+    this.service.updateClaimRemarks(
+      this.claimId, 
+      this.internalRemarks(), 
+      JSON.stringify(this.checklist())
+    ).subscribe({
+      next: () => {
+        this.processingAction.set(null);
+        this.successMessage.set('Remarks and checklist saved.');
+        setTimeout(() => this.successMessage.set(null), 3000);
+      },
+      error: () => {
+        this.actionError.set('Failed to save remarks.');
+        this.processingAction.set(null);
+      }
+    });
   }
 
   approve(): void {
+    if (!this.isChecklistComplete()) {
+      this.actionError.set('Please complete the verification checklist before approving.');
+      return;
+    }
+    
     this.processingAction.set('approve');
     this.actionError.set(null);
     this.successMessage.set(null);
-    this.service.approveClaim(this.claimId, {}).subscribe({
+
+    // Save remarks first then approve
+    const remarks = this.internalRemarks();
+    this.service.updateClaimRemarks(
+      this.claimId, 
+      remarks, 
+      JSON.stringify(this.checklist())
+    ).subscribe({
       next: () => {
-        this.processingAction.set(null);
-        this.successMessage.set('Claim approved successfully.');
-        this.load();
-      },
-      error: (err: any) => {
-        this.actionError.set(err?.error?.message ?? 'Failed to approve claim.');
-        this.processingAction.set(null);
-      },
+        this.service.approveClaim(this.claimId, { internalRemarks: remarks }).subscribe({
+          next: () => {
+            this.processingAction.set(null);
+            this.successMessage.set('Claim approved successfully.');
+            this.load();
+          },
+          error: (err: any) => {
+            this.actionError.set(err?.error?.message ?? 'Failed to approve claim.');
+            this.processingAction.set(null);
+          },
+        });
+      }
     });
   }
 
   reject(): void {
     const reason = this.rejectionReason().trim();
+    const remarks = this.internalRemarks().trim();
+    
     if (!reason) {
       this.actionError.set('Please provide a reason for rejection.');
       return;
@@ -133,17 +223,27 @@ export class ClaimsOfficerDetailComponent implements OnInit {
     this.processingAction.set('reject');
     this.actionError.set(null);
     this.successMessage.set(null);
-    this.service.rejectClaim(this.claimId, reason).subscribe({
+
+    // Save current checklist/remarks state first
+    this.service.updateClaimRemarks(
+      this.claimId, 
+      remarks, 
+      JSON.stringify(this.checklist())
+    ).subscribe({
       next: () => {
-        this.processingAction.set(null);
-        this.showRejectForm.set(false);
-        this.successMessage.set('Claim rejected successfully.');
-        this.load();
-      },
-      error: (err: any) => {
-        this.actionError.set(err?.error?.message ?? 'Failed to reject claim.');
-        this.processingAction.set(null);
-      },
+        this.service.rejectClaim(this.claimId, reason, remarks).subscribe({
+          next: () => {
+            this.processingAction.set(null);
+            this.showRejectForm.set(false);
+            this.successMessage.set('Claim rejected successfully.');
+            this.load();
+          },
+          error: (err: any) => {
+            this.actionError.set(err?.error?.message ?? 'Failed to reject claim.');
+            this.processingAction.set(null);
+          },
+        });
+      }
     });
   }
 

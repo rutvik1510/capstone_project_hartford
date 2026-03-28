@@ -2,6 +2,7 @@ import { Component, inject, signal, afterNextRender } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SubscriptionDetailsService } from './subscription-details.service';
+import { AiService } from '../../customer-dashboard/ai.service';
 
 interface RiskFactor {
   factor: string;
@@ -16,6 +17,7 @@ interface RiskFactor {
 })
 export class SubscriptionDetailsComponent {
   private readonly service = inject(SubscriptionDetailsService);
+  private readonly aiService = inject(AiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -25,6 +27,11 @@ export class SubscriptionDetailsComponent {
   readonly actionError = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
   readonly processingAction = signal<string | null>(null);
+  readonly underwriterRemarks = signal<string>('');
+
+  // AI Summarizer
+  readonly docSummary = signal<string | null>(null);
+  readonly isAnalyzing = signal(false);
 
   private subscriptionId!: number;
 
@@ -38,18 +45,42 @@ export class SubscriptionDetailsComponent {
     });
   }
 
+  updateRemarks(event: Event): void {
+    const val = (event.target as HTMLTextAreaElement).value;
+    this.underwriterRemarks.set(val);
+  }
+
   private load(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
     this.service.getSubscriptionDetails(this.subscriptionId).subscribe({
       next: (res: any) => {
-        this.sub.set(res.data ?? res);
+        const data = res.data ?? res;
+        this.sub.set(data);
+        if (data.underwriterNotes) {
+          this.underwriterRemarks.set(data.underwriterNotes);
+        }
         this.isLoading.set(false);
       },
       error: () => {
         this.errorMessage.set('Failed to load subscription details.');
         this.isLoading.set(false);
       },
+    });
+  }
+
+  fetchDocSummary(): void {
+    this.isAnalyzing.set(true);
+    this.docSummary.set(null);
+    this.aiService.analyzeSubscriptionDoc(this.subscriptionId).subscribe({
+      next: (res: any) => {
+        this.docSummary.set(res.data || res);
+        this.isAnalyzing.set(false);
+      },
+      error: () => {
+        this.docSummary.set('Failed to generate summary.');
+        this.isAnalyzing.set(false);
+      }
     });
   }
 
@@ -102,7 +133,13 @@ export class SubscriptionDetailsComponent {
     }
 
     this.processingAction.set('approve');
-    const payload = overrideAmount ? { premiumOverrideAmount: overrideAmount, overrideReason } : {};
+    const payload: any = {
+      underwriterNotes: this.underwriterRemarks()
+    };
+    if (overrideAmount) {
+      payload.premiumOverrideAmount = overrideAmount;
+      payload.overrideReason = overrideReason;
+    }
 
     this.service.approveSubscription(this.subscriptionId, payload).subscribe({
       next: () => {
@@ -122,7 +159,7 @@ export class SubscriptionDetailsComponent {
     if (reason === null) return; // User cancelled prompt
 
     this.processingAction.set('reject');
-    this.service.rejectSubscription(this.subscriptionId, reason).subscribe({
+    this.service.rejectSubscription(this.subscriptionId, reason, this.underwriterRemarks()).subscribe({
       next: () => {
         this.successMessage.set('Subscription rejected.');
         this.load();
@@ -137,5 +174,14 @@ export class SubscriptionDetailsComponent {
 
   goBack(): void {
     this.router.navigate(['/underwriter-dashboard']);
+  }
+
+  viewDocument(path: string | undefined): void {
+    if (!path) {
+      alert('No compliance document provided.');
+      return;
+    }
+    const url = path.startsWith('http') ? path : `http://localhost:8080/uploads/${path}`;
+    window.open(url, '_blank');
   }
 }

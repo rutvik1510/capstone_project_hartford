@@ -13,4 +13,10 @@ export class CustomerClaimsService {
   collectClaim(claimId: number): Observable<any> {
     return this.http.put(`http://localhost:8080/claims/${claimId}/collect`, {});
   }
+
+  downloadClaimReport(claimId: number): Observable<Blob> {
+    return this.http.get(`http://localhost:8080/api/reports/claim/${claimId}`, {
+      responseType: 'blob'
+    });
+  }
 }

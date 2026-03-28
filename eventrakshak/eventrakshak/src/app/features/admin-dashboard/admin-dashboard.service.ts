@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, httpResource } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from '../../core/auth.service';
 
 export interface Policy {
   id?: number;
@@ -73,15 +74,28 @@ export interface AdminEvent {
 @Injectable({ providedIn: 'root' })
 export class AdminDashboardService {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
   private readonly base = 'http://localhost:8080/admin';
 
   // Using httpResource for modern Signal-based fetching
-  readonly statsResource = httpResource<ApiResponse<AdminStats>>(() => `${this.base}/dashboard/stats`);
-  readonly claimsResource = httpResource<ApiResponse<any[]>>(() => `${this.base}/claims`);
-  readonly subscriptionsResource = httpResource<ApiResponse<any[]>>(() => `${this.base}/subscriptions`);
-  readonly eventsResource = httpResource<ApiResponse<AdminEvent[]>>(() => `${this.base}/events`);
-  readonly underwritersResource = httpResource<ApiResponse<any[]>>(() => `${this.base}/underwriters`);
-  readonly claimsOfficersResource = httpResource<ApiResponse<any[]>>(() => `${this.base}/claims-officers`);
+  // Adding authService.isLoggedIn() ensures they refresh when login state changes
+  readonly statsResource = httpResource<ApiResponse<AdminStats>>(() => 
+    this.authService.isLoggedIn() ? `${this.base}/dashboard/stats` : undefined);
+  
+  readonly claimsResource = httpResource<ApiResponse<any[]>>(() => 
+    this.authService.isLoggedIn() ? `${this.base}/claims` : undefined);
+  
+  readonly subscriptionsResource = httpResource<ApiResponse<any[]>>(() => 
+    this.authService.isLoggedIn() ? `${this.base}/subscriptions` : undefined);
+  
+  readonly eventsResource = httpResource<ApiResponse<AdminEvent[]>>(() => 
+    this.authService.isLoggedIn() ? `${this.base}/events` : undefined);
+  
+  readonly underwritersResource = httpResource<ApiResponse<any[]>>(() => 
+    this.authService.isLoggedIn() ? `${this.base}/underwriters` : undefined);
+  
+  readonly claimsOfficersResource = httpResource<ApiResponse<any[]>>(() => 
+    this.authService.isLoggedIn() ? `${this.base}/claims-officers` : undefined);
 
   getPolicies(): Observable<ApiResponse<Policy[]>> {
     return this.http.get<ApiResponse<Policy[]>>(`${this.base}/policies`);

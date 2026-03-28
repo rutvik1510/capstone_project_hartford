@@ -69,6 +69,30 @@ export class MySubscriptionsComponent implements OnInit {
     this.router.navigate(['/file-claim', subscriptionId]);
   }
 
+  downloadReport(subscriptionId: number): void {
+    this.service.downloadPolicyReport(subscriptionId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Policy_Report_${subscriptionId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => this.errorMessage.set('Failed to download report.')
+    });
+  }
+
+  viewReport(subscriptionId: number): void {
+    this.service.downloadPolicyReport(subscriptionId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      },
+      error: () => this.errorMessage.set('Failed to view report.')
+    });
+  }
+
   goBack(): void {
     this.router.navigate(['/customer-dashboard']);
   }

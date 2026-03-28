@@ -9,6 +9,7 @@ import org.hartford.eventguard.dto.MusicEventRequest;
 import org.hartford.eventguard.entity.*;
 import org.hartford.eventguard.exception.InvalidRequestException;
 import org.hartford.eventguard.exception.ResourceNotFoundException;
+import org.hartford.eventguard.exception.UnauthorizedAccessException;
 import org.hartford.eventguard.repo.ClaimsRepository;
 import org.hartford.eventguard.repo.EventRepository;
 import org.hartford.eventguard.repo.PolicySubscriptionRepository;
@@ -120,9 +121,15 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
-    public EventResponse getEventByIdDTO(Long id) {
+    public EventResponse getEventByIdDTO(Long id, String email) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+        
+        // Security Check: Event must belong to the user
+        if (!event.getUser().getEmail().equals(email)) {
+            throw new UnauthorizedAccessException("You do not have permission to view this event");
+        }
+        
         return convertToDTO(event);
     }
 

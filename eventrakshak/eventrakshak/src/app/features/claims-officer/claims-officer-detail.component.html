@@ -76,7 +76,7 @@
 
       <div class="flex flex-col gap-6">
 
-        <!-- ── Card 1: Claim Information ──────────────────────────── -->
+        <!-- Card 1: Claim Information -->
         <div class="bg-white rounded-xl shadow-md p-6">
           <h2 class="text-base font-semibold text-[#1F2937] mb-4 flex items-center gap-2">
             <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -122,7 +122,7 @@
           </div>
         </div>
 
-        <!-- ── Card 2: Event Details ───────────────────────────────── -->
+        <!-- Card 2: Event Details -->
         <div class="bg-white rounded-xl shadow-md p-6">
           <h2 class="text-base font-semibold text-[#1F2937] mb-4 flex items-center gap-2">
             <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -159,7 +159,7 @@
           </div>
         </div>
 
-        <!-- ── Card 3: Policy Coverage ────────────────────────────── -->
+        <!-- Card 3: Policy Coverage -->
         <div class="bg-white rounded-xl shadow-md p-6">
           <h2 class="text-base font-semibold text-[#1F2937] mb-4 flex items-center gap-2">
             <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -188,7 +188,7 @@
           </div>
         </div>
 
-        <!-- ── Card 4: Risk Analysis ──────────────────────────────── -->
+        <!-- Card 4: Risk Analysis -->
         <div class="bg-white rounded-xl shadow-md p-6">
           <h2 class="text-base font-semibold text-[#1F2937] mb-4 flex items-center gap-2">
             <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -219,7 +219,7 @@
           </div>
         </div>
 
-        <!-- ── Card 5: Weather Details ────────────────────────────── -->
+        <!-- Card 5: Weather Details -->
         <div class="bg-white rounded-xl shadow-md p-6">
           <h2 class="text-base font-semibold text-[#1F2937] mb-4 flex items-center gap-2">
             <svg class="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -248,43 +248,149 @@
           </div>
         </div>
 
-        <!-- ── Status Message ───────────────────────────────────── -->
+        <!-- Card 6: Internal Audit & Verification -->
+        <div class="bg-[#F8FAFC] rounded-2xl border-2 border-slate-200 p-6 shadow-sm">
+          
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-black text-[#1F2937] flex items-center gap-2">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+              Internal Audit & Verification
+            </h2>
+            <button (click)="fetchDocSummary()" [disabled]="isAnalyzing()"
+              class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg">
+              <svg *ngIf="!isAnalyzing()" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              {{ isAnalyzing() ? 'Extracting...' : 'Run AI Smart Audit' }}
+            </button>
+          </div>
+
+          @if (docSummary()) {
+            <div class="mb-8 p-6 bg-white rounded-2xl border-2 border-indigo-100 shadow-sm animate-in fade-in zoom-in duration-300">
+              <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">AI Evidence Analysis</p>
+              <div class="text-base text-slate-800 leading-relaxed whitespace-pre-line" style="font-family: 'Times New Roman', Times, serif;">
+                {{ docSummary() }}
+              </div>
+            </div>
+          }
+
+          <!-- Verification Checklist -->
+          <div class="space-y-3 mb-6">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Required Checks</p>
+            
+            <div (click)="claim()!.status === 'PENDING' && toggleChecklist('evidenceMatches')" 
+                 class="flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer bg-white"
+                 [ngClass]="checklist().evidenceMatches ? 'border-green-500 bg-green-50' : 'border-slate-100'">
+              <div class="w-6 h-6 rounded-md flex items-center justify-center border-2 transition-all"
+                   [ngClass]="checklist().evidenceMatches ? 'bg-green-500 border-green-500' : 'border-slate-300'">
+                <svg *ngIf="checklist().evidenceMatches" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3"/></svg>
+              </div>
+              <span class="text-sm font-bold text-slate-700">Evidence matches incident description</span>
+            </div>
+
+            <div (click)="claim()!.status === 'PENDING' && toggleChecklist('noNegligence')" 
+                 class="flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer bg-white"
+                 [ngClass]="checklist().noNegligence ? 'border-green-500 bg-green-50' : 'border-slate-100'">
+              <div class="w-6 h-6 rounded-md flex items-center justify-center border-2 transition-all"
+                   [ngClass]="checklist().noNegligence ? 'bg-green-500 border-green-500' : 'border-slate-300'">
+                <svg *ngIf="checklist().noNegligence" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3"/></svg>
+              </div>
+              <span class="text-sm font-bold text-slate-700">No intentional negligence detected</span>
+            </div>
+
+            <div (click)="claim()!.status === 'PENDING' && toggleChecklist('withinCoverageLimit')" 
+                 class="flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer bg-white"
+                 [ngClass]="checklist().withinCoverageLimit ? 'border-green-500 bg-green-50' : 'border-slate-100'">
+              <div class="w-6 h-6 rounded-md flex items-center justify-center border-2 transition-all"
+                   [ngClass]="checklist().withinCoverageLimit ? 'bg-green-500 border-green-500' : 'border-slate-300'">
+                <svg *ngIf="checklist().withinCoverageLimit" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3"/></svg>
+              </div>
+              <span class="text-sm font-bold text-slate-700">Claim amount is within coverage limits</span>
+            </div>
+          </div>
+
+          <!-- Settlement Review Notes -->
+          <div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Settlement Review Notes (Visible to Customer)</p>
+            @if (claim()!.status === 'PENDING') {
+              <textarea
+                [value]="internalRemarks()"
+                (input)="updateInternalRemarks($event)"
+                placeholder="Record your findings, conditions, or reasons for the settlement decision..."
+                class="w-full h-28 p-4 rounded-2xl bg-white border-2 border-slate-100 text-sm font-medium focus:ring-2 focus:ring-indigo-600 outline-none transition-all"
+              ></textarea>
+              <div class="mt-3 flex justify-end">
+                <button (click)="saveRemarks()" [disabled]="processingAction() === 'save'"
+                  class="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 transition-colors bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                  {{ processingAction() === 'save' ? 'Saving...' : 'Save Progress' }}
+                </button>
+              </div>
+            } @else {
+              <div class="p-4 rounded-2xl bg-white border border-slate-100 text-sm font-medium text-slate-600 italic">
+                {{ internalRemarks() || 'No review notes recorded.' }}
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Status Message -->
         @if (claim()!.status.toUpperCase() !== 'PENDING') {
           <div class="p-6 rounded-xl border {{ claim()!.status.toUpperCase() === 'REJECTED' ? 'bg-red-50 border-red-100 text-red-700' : 'bg-green-50 border-green-100 text-green-700' }}">
             <div class="flex items-center gap-2 text-sm font-bold uppercase tracking-wider">
-              {{ claim()!.status }}
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path *ngIf="claim()!.status === 'APPROVED'" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path *ngIf="claim()!.status === 'REJECTED'" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Claim status: {{ claim()!.status }}
             </div>
             @if (claim()!.status.toUpperCase() === 'REJECTED' && claim()!.rejectionReason) {
-              <p class="text-sm italic mt-2">"{{ claim()!.rejectionReason }}"</p>
+              <p class="text-sm italic mt-2 font-medium">Customer Reason: "{{ claim()!.rejectionReason }}"</p>
             }
           </div>
         }
 
-        <!-- ── Approve / Reject Buttons ───────────────────────────── -->
+        <!-- Approve / Reject Buttons -->
         @if (claim()!.status.toUpperCase() === 'PENDING') {
           <div class="flex flex-col gap-4">
-            <div class="bg-white rounded-xl shadow-md p-6 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                [disabled]="processingAction() !== null"
-                (click)="toggleRejectForm()"
-                class="px-5 py-2.5 rounded-lg border-2 border-red-600 text-red-600 hover:bg-red-50 disabled:opacity-50
-                       disabled:cursor-not-allowed text-sm font-semibold transition-all flex items-center gap-2"
-              >
-                {{ showRejectForm() ? 'Cancel' : 'Reject Claim' }}
-              </button>
-              <button
-                type="button"
-                [disabled]="processingAction() !== null"
-                (click)="approve()"
-                class="px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 disabled:opacity-50
-                       disabled:cursor-not-allowed text-white text-sm font-semibold transition-all flex items-center gap-2 shadow-sm"
-              >
-                @if (processingAction() === 'approve') {
-                  <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+            <div class="bg-white rounded-2xl shadow-xl p-6 flex items-center justify-between gap-3 border border-slate-100">
+              
+              <div class="flex items-center gap-2">
+                @if (!isChecklistComplete()) {
+                  <span class="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2.5"/></svg>
+                    Checklist Incomplete
+                  </span>
+                } @else {
+                  <span class="text-[10px] font-black text-green-600 uppercase tracking-widest flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2.5"/></svg>
+                    Ready for Approval
+                  </span>
                 }
-                Approve Claim
-              </button>
+              </div>
+
+              <div class="flex gap-3">
+                <button
+                  type="button"
+                  [disabled]="processingAction() !== null"
+                  (click)="toggleRejectForm()"
+                  class="px-6 py-3 rounded-xl border-2 border-red-100 text-red-600 hover:bg-red-50 disabled:opacity-50
+                         disabled:cursor-not-allowed text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                >
+                  {{ showRejectForm() ? 'Cancel' : 'Reject' }}
+                </button>
+                <button
+                  type="button"
+                  [disabled]="processingAction() !== null || !isChecklistComplete()"
+                  (click)="approve()"
+                  class="px-8 py-3 rounded-xl bg-green-600 hover:bg-green-700 disabled:opacity-40
+                         disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-green-600/20"
+                >
+                  @if (processingAction() === 'approve') {
+                    <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                  }
+                  Approve Claim
+                </button>
+              </div>
             </div>
 
             @if (showRejectForm()) {

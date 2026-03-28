@@ -182,10 +182,27 @@
         <!-- ── SECTION 5: Compliance & Evidence ──────────────────────────── -->
         @if (subscription.safetyComplianceDocPath) {
           <div class="bg-white shadow-md rounded-xl p-6">
-            <h2 class="text-base font-semibold text-[#1F2937] mb-4 flex items-center gap-2">
-              <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-              Compliance & Evidence
-            </h2>
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-base font-semibold text-[#1F2937] flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                Compliance & Evidence
+              </h2>
+              <button (click)="fetchDocSummary()" [disabled]="isAnalyzing()"
+                class="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-emerald-100 transition-all disabled:opacity-50 flex items-center gap-2">
+                <svg *ngIf="!isAnalyzing()" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                {{ isAnalyzing() ? 'Analyzing...' : 'AI Smart Audit' }}
+              </button>
+            </div>
+
+            @if (docSummary()) {
+              <div class="mb-6 p-5 bg-emerald-50/50 border-2 border-emerald-100 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300">
+                <p class="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-3">AI Audit Summary</p>
+                <div class="text-sm text-emerald-900 leading-relaxed whitespace-pre-line font-medium">
+                  {{ docSummary() }}
+                </div>
+              </div>
+            }
+
             <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
               <div>
                 <p class="text-sm font-bold text-slate-700">Safety Compliance Report</p>
@@ -223,6 +240,12 @@
                 }
                 This subscription has been <span class="font-bold uppercase">{{ subscription.status }}</span>.
               </div>
+              @if (subscription.underwriterNotes) {
+                <div class="mt-2 pl-7 border-l-2 border-slate-200">
+                  <p class="text-[10px] font-black uppercase text-slate-400 mb-1">Underwriter Notes</p>
+                  <p class="text-xs italic">"{{ subscription.underwriterNotes }}"</p>
+                </div>
+              }
               @if (subscription.status.toUpperCase() === 'REJECTED' && subscription.rejectionReason) {
                 <p class="text-xs italic mt-1 pl-7">"{{ subscription.rejectionReason }}"</p>
               }
@@ -232,20 +255,41 @@
           <!-- Action Buttons -->
           @if (subscription.status.toUpperCase() === 'PENDING') {
             <div class="flex flex-col gap-4">
+              
+              <!-- Underwriter Notes (ALWAYS PRESENT) -->
+              <div class="mb-4">
+                <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Final Review Notes</label>
+                <textarea 
+                  [(ngModel)]="underwriterNotes" 
+                  placeholder="Add any specific conditions, observations, or reasons for the customer to see..."
+                  class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-4 text-sm focus:border-indigo-500 focus:ring-0 transition-all outline-none"
+                  rows="3"></textarea>
+              </div>
+
               <div class="flex items-center gap-4 flex-wrap">
                 <!-- Approve -->
                 <button
                   (click)="approve()"
-                  [disabled]="processingAction() !== null"
+                  [disabled]="processingAction() !== null || showAdjustmentForm()"
                   class="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-all shadow-sm active:scale-95 disabled:opacity-50"
                 >
-                  @if (processingAction() === 'approve') {
+                  @if (processingAction() === 'approve' && !showAdjustmentForm()) {
                     <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
                     Approving...
                   } @else {
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                    Approve
+                    Standard Approve
                   }
+                </button>
+
+                <!-- Adjust Price & Approve -->
+                <button
+                  (click)="toggleAdjustmentForm()"
+                  [disabled]="processingAction() !== null"
+                  class="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.407 2.67 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.407-2.67-1M12 16c1.657 0 3-.895 3-2s-1.343-2-3-2-3-.895-3-2 1.343-2 3-2"/></svg>
+                  {{ showAdjustmentForm() ? 'Cancel Adjustment' : 'Adjust Price & Approve' }}
                 </button>
 
                 <!-- Toggle Reject -->
@@ -259,6 +303,46 @@
                 </button>
               </div>
 
+              <!-- Inline Price Adjustment Form -->
+              @if (showAdjustmentForm()) {
+                <div class="p-5 rounded-2xl bg-indigo-50 border border-indigo-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <h3 class="text-sm font-black text-indigo-900 uppercase tracking-widest mb-4">Premium Adjustment</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label class="block text-[10px] font-black text-indigo-800 uppercase tracking-widest mb-1">New Premium Amount (₹)</label>
+                      <input
+                        type="number"
+                        [value]="adjustedPremium()"
+                        (input)="onPremiumInput($event)"
+                        class="w-full p-2.5 rounded-xl border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-black text-indigo-800 uppercase tracking-widest mb-1">Adjustment Reason</label>
+                      <textarea
+                        (input)="onAdjustmentReasonInput($event)"
+                        [value]="adjustmentReason()"
+                        placeholder="e.g. Higher profile event than typical music gigs..."
+                        class="w-full h-[42px] p-2.5 rounded-xl border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white"
+                      ></textarea>
+                    </div>
+                  </div>
+                  <div class="flex justify-end">
+                    <button
+                      (click)="approve()"
+                      [disabled]="processingAction() === 'approve'"
+                      class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-600/20 transition-all active:scale-95 disabled:opacity-50"
+                    >
+                      @if (processingAction() === 'approve') {
+                        Processing...
+                      } @else {
+                        Apply Adjustment & Approve
+                      }
+                    </button>
+                  </div>
+                </div>
+              }
+
               <!-- Inline Rejection Form -->
               @if (showRejectForm()) {
                 <div class="p-5 rounded-2xl bg-red-50 border border-red-100 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -267,7 +351,7 @@
                     (input)="onReasonInput($event)"
                     [value]="rejectionReason()"
                     placeholder="e.g. Risk percentage exceeds policy threshold..."
-                    class="w-full h-24 p-3 rounded-xl border border-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm mb-3"
+                    class="w-full h-24 p-3 rounded-xl border border-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm mb-3 bg-white"
                   ></textarea>
                   <div class="flex justify-end">
                     <button

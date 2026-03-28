@@ -124,7 +124,7 @@ class ClaimServiceTest {
         when(claimsRepository.findById(100L)).thenReturn(Optional.of(claim));
         when(userRepository.findByEmail("officer@test.com")).thenReturn(Optional.of(officer));
 
-        ClaimResponse response = claimService.approveClaim(100L, "officer@test.com", 1000.0);
+        ClaimResponse response = claimService.approveClaim(100L, "officer@test.com", 1000.0, "Approved");
 
         assertEquals(ClaimStatus.APPROVED.toString(), response.getStatus());
         assertEquals(1000.0, response.getApprovedAmount());
@@ -147,7 +147,7 @@ class ClaimServiceTest {
         when(userRepository.findByEmail("officer@test.com")).thenReturn(Optional.of(officer));
 
         assertThrows(org.hartford.eventguard.exception.UnauthorizedAccessException.class, () -> {
-            claimService.approveClaim(100L, "officer@test.com", 1000.0);
+            claimService.approveClaim(100L, "officer@test.com", 1000.0, "Approved");
         });
     }
 }
