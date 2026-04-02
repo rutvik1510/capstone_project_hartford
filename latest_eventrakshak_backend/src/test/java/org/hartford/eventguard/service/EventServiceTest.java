@@ -122,13 +122,16 @@ class EventServiceTest {
 
     @Test
     void deleteEvent_Success() {
+        User user = new User();
+        user.setEmail("test@test.com");
         Event event = new Event();
         event.setEventId(1L);
+        event.setUser(user);
 
         when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
         when(subscriptionRepository.findByEvent_EventId(1L)).thenReturn(new ArrayList<>());
 
-        String result = eventService.deleteEvent(1L);
+        String result = eventService.deleteEvent(1L, "test@test.com");
 
         assertEquals("Event deleted successfully", result);
         verify(eventRepository, times(1)).delete(event);
@@ -136,8 +139,11 @@ class EventServiceTest {
 
     @Test
     void deleteEvent_WithActiveSubscription_ThrowsException() {
+        User user = new User();
+        user.setEmail("test@test.com");
         Event event = new Event();
         event.setEventId(1L);
+        event.setUser(user);
 
         List<PolicySubscription> subs = new ArrayList<>();
         subs.add(new PolicySubscription());
@@ -146,7 +152,7 @@ class EventServiceTest {
         when(subscriptionRepository.findByEvent_EventId(1L)).thenReturn(subs);
 
         assertThrows(InvalidRequestException.class, () -> {
-            eventService.deleteEvent(1L);
+            eventService.deleteEvent(1L, "test@test.com");
         });
 
         verify(eventRepository, never()).delete(any(Event.class));

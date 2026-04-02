@@ -218,7 +218,7 @@ public class ClaimService {
 
         // Notify Customer
         notificationService.createNotification(claim.getPolicySubscription().getEvent().getUser(), 
-            "Your claim for " + claim.getPolicySubscription().getEvent().getEventName() + " has been APPROVED for ₹" + amount, 
+            "Your claim for " + claim.getPolicySubscription().getEvent().getEventName() + " has been APPROVED for ₹" + claim.getApprovedAmount(), 
             "SUCCESS");
 
         return convertToClaimResponse(claim);

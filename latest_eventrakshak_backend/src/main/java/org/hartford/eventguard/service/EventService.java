@@ -133,9 +133,14 @@ public class EventService {
         return convertToDTO(event);
     }
 
-    public String deleteEvent(Long id) {
+    public String deleteEvent(Long id, String email) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+        
+        // Security Check: Event must belong to the user
+        if (!event.getUser().getEmail().equals(email)) {
+            throw new UnauthorizedAccessException("You do not have permission to delete this event");
+        }
         
         // Check if there are active subscriptions
         List<PolicySubscription> subs = subscriptionRepository.findByEvent_EventId(id);

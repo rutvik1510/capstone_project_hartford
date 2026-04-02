@@ -20,5 +20,7 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
 
     // Find active policies by domain
     List<Policy> findByDomainAndIsActiveTrue(EventDomain domain);
+
+    List<Policy> findByDomainAndIsActive(EventDomain domain, boolean isActive);
 }
 

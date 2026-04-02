@@ -34,9 +34,15 @@ public class NotificationService {
     }
 
     @Transactional
-    public void markAsRead(Long id) {
+    public void markAsRead(Long id, String email) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification not found"));
+        
+        // Security Check: Notification must belong to the user
+        if (!notification.getRecipient().getEmail().equals(email)) {
+            throw new org.hartford.eventguard.exception.UnauthorizedAccessException("You do not have permission to modify this notification");
+        }
+        
         notification.setRead(true);
         notificationRepository.save(notification);
     }

@@ -37,7 +37,7 @@ class MusicConcertRiskStrategyTest {
     @Test
     void calculateRisk_addsAllConfiguredMusicRiskFactors() {
         event.setNumberOfAttendees(2000); // +2.0
-        event.setVenueType(VenueType.OUTDOOR); // +1.0
+        event.setIsOutdoor(true); // +1.0
         event.setAlcoholAllowed(true); // +1.0
         event.setTemporaryStage(true); // +0.5
         event.setFireworksUsed(true); // +1.5

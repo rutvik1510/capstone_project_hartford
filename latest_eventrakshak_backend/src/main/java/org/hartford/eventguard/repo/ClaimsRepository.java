@@ -17,6 +17,8 @@ public interface ClaimsRepository extends JpaRepository<Claim, Long> {
 
     long countByStatus(ClaimStatus status);
 
+    List<Claim> findByStatus(ClaimStatus status);
+
     boolean existsByPolicySubscription_SubscriptionId(Long subscriptionId);
 
     @Query("SELECT COALESCE(SUM(c.approvedAmount), 0.0) FROM Claim c WHERE c.status IN (org.hartford.eventguard.entity.ClaimStatus.APPROVED, org.hartford.eventguard.entity.ClaimStatus.COLLECTED)")

@@ -33,8 +33,8 @@ public class MusicConcertRiskStrategy implements RiskCalculationStrategy {
             System.out.println("  [+] Large Crowd Detected      : +2.0%");
         }
 
-        // venueType = OUTDOOR → +1
-        if (event.getVenueType() == VenueType.OUTDOOR) {
+        // isOutdoor = true → +1
+        if (Boolean.TRUE.equals(event.getIsOutdoor())) {
             risk += 1.0;
             factors.add("Outdoor Venue (+1.0)");
             System.out.println("  [+] Outdoor Venue Exposure    : +1.0%");

@@ -11,6 +11,7 @@ public class CustomerSubscriptionResponse {
     private String eventName;
     private LocalDate eventDate;
     private String policyName;
+    private String policyDescription;
     private String riskLevel;
     private Double baseRate;
     private Double maxCoverageAmount;
@@ -28,6 +29,14 @@ public class CustomerSubscriptionResponse {
     private LocalDateTime requestedAt;
 
     public CustomerSubscriptionResponse() {
+    }
+
+    public String getPolicyDescription() {
+        return policyDescription;
+    }
+
+    public void setPolicyDescription(String policyDescription) {
+        this.policyDescription = policyDescription;
     }
 
     public String getOverrideReason() {

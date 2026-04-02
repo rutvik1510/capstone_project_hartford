@@ -70,9 +70,10 @@ class EventControllerTest {
 
     @Test
     void deleteEvent_Success() {
-        when(eventService.deleteEvent(1L)).thenReturn("Event deleted successfully");
+        when(authentication.getName()).thenReturn("test@test.com");
+        when(eventService.deleteEvent(1L, "test@test.com")).thenReturn("Event deleted successfully");
 
-        ResponseEntity<ApiResponse<String>> result = eventController.deleteEvent(1L);
+        ResponseEntity<ApiResponse<String>> result = eventController.deleteEvent(1L, authentication);
 
         assertEquals(HttpStatus.OK, result.getStatusCode());
         // ApiResponse.success(message) puts message in 'message' field, 'data' is null

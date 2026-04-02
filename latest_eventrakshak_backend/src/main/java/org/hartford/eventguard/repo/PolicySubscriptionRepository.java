@@ -19,6 +19,8 @@ public interface PolicySubscriptionRepository extends JpaRepository<PolicySubscr
     // Count subscriptions by status for dashboard stats
     long countByStatus(SubscriptionStatus status);
 
+    List<PolicySubscription> findByStatus(SubscriptionStatus status);
+
     // Check for existing subscription to prevent duplicates
     Optional<PolicySubscription> findByEvent_EventIdAndPolicy_PolicyId(Long eventId, Long policyId);
 

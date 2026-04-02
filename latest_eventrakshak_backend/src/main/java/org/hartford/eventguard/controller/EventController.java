@@ -91,8 +91,9 @@ public class EventController {
      * @return Success message
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteEvent(@PathVariable Long id) {
-        String message = eventService.deleteEvent(id);
+    public ResponseEntity<ApiResponse<String>> deleteEvent(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        String message = eventService.deleteEvent(id, email);
         return ResponseEntity.ok(ApiResponse.success(message));
     }
 }

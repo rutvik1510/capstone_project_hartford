@@ -46,10 +46,15 @@ public class PolicySubscriptionService {
         this.riskRepository = riskRepository;
     }
 
-    public CustomerSubscriptionResponse calculateQuoteForCustomer(Long eventId, Long policyId) {
+    public CustomerSubscriptionResponse calculateQuoteForCustomer(Long eventId, Long policyId, String email) {
         // Fetch Event
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+
+        // Security Check: Event must belong to the user
+        if (!event.getUser().getEmail().equals(email)) {
+            throw new UnauthorizedAccessException("You do not have permission to view quotes for this event");
+        }
 
         // Fetch Policy
         Policy policy = policyRepository.findById(policyId)
@@ -107,6 +112,67 @@ public class PolicySubscriptionService {
         dto.setRiskLevel(riskLevel);
         
         return dto;
+    }
+
+    public List<CustomerSubscriptionResponse> getQuotesForEvent(Long eventId, String email) {
+        // Fetch Event
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+
+        // Security Check: Event must belong to the user
+        if (!event.getUser().getEmail().equals(email)) {
+            throw new UnauthorizedAccessException("You do not have permission to view quotes for this event");
+        }
+
+        // Get domain from event
+        EventDomain domain = event.getEventType();
+        
+        // Fetch All Active Policies for this domain
+        List<Policy> policies = policyRepository.findByDomainAndIsActive(domain, true);
+
+        // Calculate detailed risk breakdown once for the event
+        DetailedRiskBreakdown riskBreakdown = riskCalculationService.calculateRiskWithBreakdown(event);
+        double totalRisk = riskBreakdown.getEventRisk() + riskBreakdown.getWeatherRisk();
+        
+        double multiplier = 1.0;
+        if (totalRisk > 15) {
+            multiplier = 2.0; // Critical
+        } else if (totalRisk > 10) {
+            multiplier = 1.6; // High
+        } else if (totalRisk > 5) {
+            multiplier = 1.3; // Medium
+        }
+
+        final double finalMultiplier = multiplier;
+
+        // Convert each policy to a quote DTO
+        return policies.stream().map(policy -> {
+            double basePremium = event.getBudget() * (policy.getBaseRate() / 100.0);
+            double premiumAmount = basePremium * finalMultiplier;
+
+            CustomerSubscriptionResponse dto = new CustomerSubscriptionResponse();
+            dto.setEventId(eventId);
+            dto.setPolicyId(policy.getPolicyId());
+            dto.setEventName(event.getEventName());
+            dto.setEventDate(event.getEventDate());
+            dto.setPolicyName(policy.getPolicyName());
+            dto.setPolicyDescription(policy.getDescription());
+            dto.setBaseRate(policy.getBaseRate());
+            dto.setMaxCoverageAmount(policy.getMaxCoverageAmount());
+            dto.setPremiumAmount(premiumAmount);
+            dto.setStatus("QUOTE");
+            dto.setPaid(false);
+            dto.setRiskPercentage(totalRisk);
+            dto.setEventRisk(riskBreakdown.getEventRisk());
+            dto.setWeatherRisk(riskBreakdown.getWeatherRisk());
+            
+            String riskLevel = "LOW";
+            if (totalRisk > 10) riskLevel = "HIGH";
+            else if (totalRisk > 5) riskLevel = "MEDIUM";
+            dto.setRiskLevel(riskLevel);
+            
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     public CustomerSubscriptionResponse createSubscription(Long eventId, Long policyId, String email) {
@@ -337,6 +403,11 @@ public class PolicySubscriptionService {
         PolicySubscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
 
+        // Security Check: Subscription must belong to the user
+        if (!subscription.getEvent().getUser().getEmail().equals(email)) {
+            throw new UnauthorizedAccessException("You do not have permission to pay for this subscription");
+        }
+
         // --- LOCKDOWN CHECK ---
         Long eventId = subscription.getEvent().getEventId();
         List<PolicySubscription> eventSubs = subscriptionRepository.findByEvent_EventId(eventId);
@@ -447,6 +518,7 @@ public class PolicySubscriptionService {
         dto.setEventName(subscription.getEvent().getEventName());
         dto.setEventDate(subscription.getEvent().getEventDate());
         dto.setPolicyName(subscription.getPolicy().getPolicyName());
+        dto.setPolicyDescription(subscription.getPolicy().getDescription());
         dto.setBaseRate(subscription.getPolicy().getBaseRate());
         dto.setMaxCoverageAmount(subscription.getPolicy().getMaxCoverageAmount());
         dto.setPremiumAmount(subscription.getPremiumAmount());

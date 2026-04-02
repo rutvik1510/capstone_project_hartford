@@ -40,12 +40,24 @@ public class PolicySubscriptionController {
 
     @PostMapping("/quote")
     public ResponseEntity<ApiResponse<CustomerSubscriptionResponse>> calculateQuote(
-            @RequestBody QuoteRequest request) {
+            @RequestBody QuoteRequest request,
+            Authentication authentication) {
+        String email = authentication.getName();
         CustomerSubscriptionResponse response = subscriptionService.calculateQuoteForCustomer(
                 request.getEventId(),
-                request.getPolicyId()
+                request.getPolicyId(),
+                email
         );
         return ResponseEntity.ok(ApiResponse.success("Quote generated", response));
+    }
+
+    @GetMapping("/quotes-for-event/{eventId}")
+    public ResponseEntity<ApiResponse<List<CustomerSubscriptionResponse>>> getQuotesForEvent(
+            @PathVariable Long eventId,
+            Authentication authentication) {
+        String email = authentication.getName();
+        List<CustomerSubscriptionResponse> responses = subscriptionService.getQuotesForEvent(eventId, email);
+        return ResponseEntity.ok(ApiResponse.success("Quotes retrieved successfully", responses));
     }
 
     @GetMapping

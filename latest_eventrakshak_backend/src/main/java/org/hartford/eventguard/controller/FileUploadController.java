@@ -13,6 +13,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/files")
+@org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'UNDERWRITER', 'CLAIMS_OFFICER')")
 public class FileUploadController {
 
     private final String uploadDir = "uploads";

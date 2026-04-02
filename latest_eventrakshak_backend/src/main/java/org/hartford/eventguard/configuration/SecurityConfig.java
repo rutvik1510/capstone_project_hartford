@@ -62,9 +62,9 @@ public class SecurityConfig {
                                 "/**.html",
                                 "/**.css",
                                 "/**.js",
-                                "/uploads/**",
-                                "/api/files/**"
+                                "/uploads/**"
                         ).permitAll()
+                        .requestMatchers("/api/files/**").authenticated()
 
                         // Admin endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN")

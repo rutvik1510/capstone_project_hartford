@@ -62,7 +62,7 @@ class NotificationServiceTest {
     void markAsRead_Success() {
         when(notificationRepository.findById(1L)).thenReturn(Optional.of(notification));
         
-        notificationService.markAsRead(1L);
+        notificationService.markAsRead(1L, "test@test.com");
         
         assertTrue(notification.isRead());
         verify(notificationRepository, times(1)).save(notification);
@@ -73,7 +73,7 @@ class NotificationServiceTest {
         when(notificationRepository.findById(99L)).thenReturn(Optional.empty());
         
         assertThrows(ResourceNotFoundException.class, () -> {
-            notificationService.markAsRead(99L);
+            notificationService.markAsRead(99L, "test@test.com");
         });
     }
 }

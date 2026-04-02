@@ -32,9 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/h2-console",
             "/swagger-ui",
             "/v3/api-docs",
-            "/swagger-ui.html",
-            "/uploads",
-            "/api/files"
+            "/swagger-ui.html"
     );
 
     @Autowired

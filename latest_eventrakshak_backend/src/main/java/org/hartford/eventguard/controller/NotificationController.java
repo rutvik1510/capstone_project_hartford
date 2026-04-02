@@ -32,8 +32,9 @@ public class NotificationController {
     }
 
     @PutMapping("/{id}/read")
-    public ResponseEntity<ApiResponse<String>> markAsRead(@PathVariable Long id) {
-        notificationService.markAsRead(id);
+    public ResponseEntity<ApiResponse<String>> markAsRead(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        notificationService.markAsRead(id, email);
         return ResponseEntity.ok(ApiResponse.success("Notification marked as read"));
     }
 

@@ -48,6 +48,7 @@ class PolicySubscriptionServiceTest {
         event = new Event();
         event.setEventId(1L);
         event.setEventName("Test Event");
+        event.setEventDate(LocalDate.now().plusDays(15));
         event.setBudget(10000.0);
         event.setUser(user);
         event.setEventType(EventDomain.OUTDOOR_MUSIC_CONCERT);
@@ -67,7 +68,7 @@ class PolicySubscriptionServiceTest {
         when(riskCalculationService.calculateRiskWithBreakdown(event)).thenReturn(breakdown);
         when(subscriptionRepository.findByEvent_EventId(1L)).thenReturn(new ArrayList<>());
 
-        CustomerSubscriptionResponse response = subscriptionService.calculateQuoteForCustomer(1L, 1L);
+        CustomerSubscriptionResponse response = subscriptionService.calculateQuoteForCustomer(1L, 1L, "test@test.com");
 
         assertNotNull(response);
         assertEquals(1300.0, response.getPremiumAmount()); // 10000 * 0.1 * 1.3
