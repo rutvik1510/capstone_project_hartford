@@ -1,1 +1,6 @@
 <router-outlet></router-outlet>
+
+<!-- Show Chatbot globally if user is a Customer -->
+@if (isCustomer()) {
+  <app-gemini-chatbot></app-gemini-chatbot>
+}

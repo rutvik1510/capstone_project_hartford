@@ -28,6 +28,29 @@ export class MyEventsComponent {
   readonly errorMessage = computed(() => this.eventsResource.error() ? 'Failed to load events.' : null);
   
   readonly snackbar = signal<string | null>(null);
+  private pollingInterval: any;
+
+  constructor() {
+    this.startPolling();
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
+
+  private startPolling(): void {
+    if (typeof window !== 'undefined') {
+      this.pollingInterval = setInterval(() => {
+        this.reload();
+      }, 10000);
+    }
+  }
+
+  private stopPolling(): void {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
+  }
 
   viewDetails(eventId: number): void {
     this.router.navigate(['/event-details', eventId]);

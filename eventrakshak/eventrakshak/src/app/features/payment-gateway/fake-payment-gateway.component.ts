@@ -134,6 +134,7 @@ export class FakePaymentGatewayComponent implements OnInit {
     setTimeout(() => {
       this.service.payPremium(this.subscriptionId()).subscribe({
         next: () => {
+          this.service.reloadSubscriptions(); // Force fresh data
           this.router.navigate(['/my-subscriptions'], { 
             queryParams: { paid: 'true', id: this.subscriptionId() } 
           });

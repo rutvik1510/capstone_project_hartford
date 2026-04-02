@@ -1,9 +1,11 @@
-import { Component, inject, signal, computed, effect, afterNextRender } from '@angular/core';
+import { Component, inject, signal, computed, effect, afterNextRender, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { UnderwriterDashboardService } from './underwriter-dashboard.service';
 import { AuthService } from '../../core/auth.service';
 import { NotificationDropdownComponent } from '../notifications/notification-dropdown.component';
+import { AiService } from '../customer-dashboard/ai.service';
+import { FormsModule } from '@angular/forms';
 
 export interface UnderwriterSubscription {
   subscriptionId: number;
@@ -17,16 +19,23 @@ export interface UnderwriterSubscription {
   safetyComplianceDocPath?: string;
 }
 
+interface Message {
+  text: string;
+  sender: 'user' | 'agent';
+  actions?: string[];
+}
+
 @Component({
   selector: 'app-underwriter-dashboard',
   standalone: true,
-  imports: [CommonModule, NotificationDropdownComponent],
+  imports: [CommonModule, NotificationDropdownComponent, FormsModule],
   templateUrl: './underwriter-dashboard.component.html',
 })
-export class UnderwriterDashboardComponent {
+export class UnderwriterDashboardComponent implements OnInit {
   private readonly service = inject(UnderwriterDashboardService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly aiService = inject(AiService);
 
   readonly currentUsername = computed(() => this.authService.userName());
 
@@ -36,6 +45,71 @@ export class UnderwriterDashboardComponent {
   readonly actionError = signal<string | null>(null);
   readonly processingId = signal<number | null>(null);
 
+  // Chatbot state
+  readonly isChatOpen = signal(false);
+  currentMessage = '';
+  readonly chatHistory = signal<Message[]>([
+    { text: 'Hello Underwriter! I can help you summarize risks and audit safety documents. Which subscription should we look at?', sender: 'agent' }
+  ]);
+  readonly isTyping = signal(false);
+
+  ngOnInit(): void {
+    this.loadChatHistory();
+  }
+
+  loadChatHistory(): void {
+    this.aiService.getHistory().subscribe({
+      next: (res: any) => {
+        const dbMessages = res.data ?? [];
+        if (dbMessages.length > 0) {
+          const mappedMessages: Message[] = dbMessages.map((m: any) => ({
+            text: m.message,
+            sender: m.sender === 'USER' ? 'user' : 'agent'
+          }));
+          this.chatHistory.set(mappedMessages);
+        }
+      },
+      error: () => console.error('Failed to load chat history')
+    });
+  }
+
+  toggleChat(): void {
+    this.isChatOpen.update(v => !v);
+  }
+
+  handleAction(action: string): void {
+    const act = action.toLowerCase();
+    if (act.includes('view assigned')) this.loadSubscriptions();
+    else {
+      this.currentMessage = action;
+      this.sendMessage();
+    }
+  }
+
+  sendMessage(): void {
+    const msg = this.currentMessage.trim();
+    if (!msg) return;
+
+    this.chatHistory.update(history => [...history, { text: msg, sender: 'user' }]);
+    this.currentMessage = '';
+    this.isTyping.set(true);
+
+    this.aiService.sendMessage({ userQuery: msg }).subscribe({
+      next: (res: any) => {
+        const data = res.data;
+        this.chatHistory.update(history => [...history, { 
+          text: data.message, 
+          sender: 'agent',
+          actions: data.actions 
+        }]);
+        this.isTyping.set(false);
+      },
+      error: () => {
+        this.chatHistory.update(history => [...history, { text: 'AI currently unavailable.', sender: 'agent' }]);
+        this.isTyping.set(false);
+      }
+    });
+  }
   constructor() {
     afterNextRender(() => {
       this.loadSubscriptions();

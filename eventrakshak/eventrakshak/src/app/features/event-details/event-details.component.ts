@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { EventDetailsService } from './event-details.service';
 import { AiService } from '../customer-dashboard/ai.service';
+import { GeminiChatbotComponent } from '../notifications/gemini-chatbot.component';
 
 @Component({
   selector: 'app-event-details',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, GeminiChatbotComponent],
   templateUrl: './event-details.component.html',
 })
 export class EventDetailsComponent implements OnInit {
@@ -19,6 +20,7 @@ export class EventDetailsComponent implements OnInit {
   readonly eventId = signal(Number(this.route.snapshot.paramMap.get('id')));
   readonly event = signal<any>(null);
   readonly policies = signal<any[]>([]);
+  readonly quotes = signal<Record<number, any>>({});
   readonly subscribedPolicyIds = signal<Set<number>>(new Set());
   readonly hasPaidPolicy = signal(false);
   readonly hasAnySubscription = signal(false);
@@ -49,7 +51,7 @@ export class EventDetailsComponent implements OnInit {
         this.isEventLocked.set(!!eventData.isLocked);
         const domain = eventData.eventType ?? eventData.domain ?? '';
 
-        // Load Subscriptions and Policies in parallel-ish
+        // Load Subscriptions
         this.detailsService.getMySubscriptions().subscribe((subRes: any) => {
           const subs = subRes.data ?? subRes ?? [];
           const eventSubs = subs.filter((s: any) => (s.event?.eventId ?? s.eventId) === id);
@@ -74,12 +76,40 @@ export class EventDetailsComponent implements OnInit {
           }
         });
 
-        this.detailsService.getPoliciesByDomain(domain).subscribe({
-          next: (pRes: any) => {
-            this.policies.set(pRes.data ?? pRes ?? []);
-            this.isLoading.set(false);
+        // Load Quotes (which includes policy details + calculated premium)
+        this.detailsService.getQuotesForEvent(id).subscribe({
+          next: (qRes: any) => {
+            const quoteData = qRes.data ?? qRes ?? [];
+            const quotesMap: Record<number, any> = {};
+            
+            // Extract unique policies from quotes for the cards
+            const pols: any[] = [];
+            quoteData.forEach((q: any) => {
+              quotesMap[q.policyId] = q;
+              pols.push({
+                policyId: q.policyId,
+                id: q.policyId,
+                policyName: q.policyName,
+                description: q.policyDescription || '', // Base rates and other info are also in quotes
+                baseRate: q.baseRate,
+                maxCoverageAmount: q.maxCoverageAmount,
+                // We'll need to make sure the backend quote response includes coverage flags
+                // For now, let's assume we still need the base policy for coverage flags or add them to DTO
+              });
+            });
+            
+            this.quotes.set(quotesMap);
+
+            // Fetch full policies for coverage flags (coversTheft, etc.)
+            this.detailsService.getPoliciesByDomain(domain).subscribe({
+              next: (pRes: any) => {
+                this.policies.set(pRes.data ?? pRes ?? []);
+                this.isLoading.set(false);
+              },
+              error: () => { this.errorMessage.set('Failed to load policies.'); this.isLoading.set(false); }
+            });
           },
-          error: () => { this.errorMessage.set('Failed to load policies.'); this.isLoading.set(false); }
+          error: () => { this.errorMessage.set('Failed to calculate premiums.'); this.isLoading.set(false); }
         });
       },
       error: () => { this.errorMessage.set('Failed to load event.'); this.isLoading.set(false); }

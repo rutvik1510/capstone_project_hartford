@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, computed, effect } from '@angular/core'; // Add effect
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CustomerClaimsService } from './customer-claims.service';
@@ -30,15 +30,35 @@ export class CustomerClaimsComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly claims = signal<CustomerClaim[]>([]);
-  readonly isLoading = signal(true);
+  // Use the resource from CustomerClaimsService
+  readonly claimsResource = this.service.claimsResource;
+
+  // Computed signal for easy access in template
+  readonly claims = computed(() => {
+    const res = this.claimsResource.value();
+    return res?.data ?? res ?? [];
+  });
+
+  readonly isLoading = this.claimsResource.isLoading;
   readonly errorMessage = signal<string | null>(null);
+
   readonly successMessage = signal<string | null>(null);
   readonly isCollecting = signal<number | null>(null);
   readonly isConfirming = signal<number | null>(null);
 
+  constructor() {
+    // Sync errorMessage with resource error
+    effect(() => {
+      if (this.claimsResource.error()) {
+        this.errorMessage.set('Failed to load claims.');
+      }
+    });
+  }
+
   ngOnInit(): void {
-    this.loadClaims();
+    // We can still trigger a reload manually if needed,
+    // but httpResource handles initial fetch automatically
+    this.service.reloadClaims();
   }
 
   showConfirm(id: number): void {
@@ -50,17 +70,8 @@ export class CustomerClaimsComponent implements OnInit {
   }
 
   private loadClaims(): void {
-    this.isLoading.set(true);
-    this.service.getClaims().subscribe({
-      next: (res: any) => {
-        this.claims.set(res.data ?? res ?? []);
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set('Failed to load claims.');
-        this.isLoading.set(false);
-      },
-    });
+    // This is now handled by claimsResource
+    this.service.reloadClaims();
   }
 
   isPaid(status: string): boolean {

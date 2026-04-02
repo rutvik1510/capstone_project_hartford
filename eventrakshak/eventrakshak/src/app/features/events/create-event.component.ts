@@ -2,6 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router'; // Add Router
 import { EventService } from './event.service';
 import { FileClaimService } from '../file-claim/file-claim.service';
 
@@ -15,6 +16,7 @@ export class CreateEventComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly eventService = inject(EventService);
   private readonly fileService = inject(FileClaimService);
+  private readonly router = inject(Router); // Inject Router
 
   readonly eventTypes = ['OUTDOOR_MUSIC_CONCERT', 'CORPORATE_TECH_CONFERENCE'];
 
@@ -148,10 +150,12 @@ export class CreateEventComponent implements OnInit {
       };
       this.eventService.createMusicConcert(payload).subscribe({
         next: () => {
+          this.eventService.reloadMyEvents(); // Signal reload
           this.successMessage.set('Event created successfully!');
           this.isSubmitting.set(false);
           this.eventForm.reset();
           this.selectedFile = null;
+          setTimeout(() => this.router.navigate(['/my-events']), 1500); // Small delay to show success message
         },
         error: (err) => {
           this.errorMessage.set(err?.error?.message ?? 'Failed to create event.');
@@ -168,10 +172,12 @@ export class CreateEventComponent implements OnInit {
       };
       this.eventService.createCorporateConference(payload).subscribe({
         next: () => {
+          this.eventService.reloadMyEvents(); // Signal reload
           this.successMessage.set('Event created successfully!');
           this.isSubmitting.set(false);
           this.eventForm.reset();
           this.selectedFile = null;
+          setTimeout(() => this.router.navigate(['/my-events']), 1500); // Small delay to show success message
         },
         error: (err) => {
           this.errorMessage.set(err?.error?.message ?? 'Failed to create event.');

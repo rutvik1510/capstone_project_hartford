@@ -53,6 +53,15 @@ export const routes: Routes = [
     data: { role: 'ROLE_CUSTOMER' },
   },
   {
+    path: 'policies',
+    loadComponent: () =>
+      import('./features/policies/policy-list.component').then(
+        (m) => m.PolicyListComponent,
+      ),
+    canActivate: [roleGuard],
+    data: { role: 'ROLE_CUSTOMER' },
+  },
+  {
     path: 'create-event',
     loadComponent: () =>
       import('./features/events/create-event.component').then(

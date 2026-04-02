@@ -47,8 +47,8 @@
     }
 
     <div class="text-center mb-10">
-      <h2 class="text-2xl font-black text-[#1F2937] mb-2">Select Insurance Coverage</h2>
-      <p class="text-slate-500 font-medium">Choose the protection tier that best fits your event's needs.</p>
+      <h2 class="text-2xl font-black text-[#1F2937] mb-2">Explore Insurance Coverage</h2>
+      <p class="text-slate-500 font-medium">Choose the protection tier that best fits your event's needs. See the personalized estimated premium for each policy.</p>
     </div>
 
     @if (isLoading()) {
@@ -77,20 +77,25 @@
             <h3 class="text-xl font-black text-[#1F2937] mb-2">{{ policy.policyName }}</h3>
             <p class="text-sm text-slate-500 font-medium mb-6 leading-relaxed">{{ policy.description }}</p>
             
-            <div class="mb-6 grid grid-cols-1 gap-4">
+            <div class="mb-6 grid grid-cols-2 gap-4">
               <div>
                 <p class="text-[9px] text-slate-400 font-black uppercase mb-1 tracking-widest">Max Payout</p>
                 <div class="flex items-center gap-2">
                   <p class="text-lg font-black text-[#1F2937]">₹{{ (policy.maxCoverageAmount ?? 0) | number }}</p>
-                  @if ((policy.maxCoverageAmount ?? 0) < (event()?.budget ?? 0)) {
-                    <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[8px] font-black uppercase tracking-tighter">Under-Covered</span>
-                  }
                 </div>
-                @if ((policy.maxCoverageAmount ?? 0) < (event()?.budget ?? 0)) {
-                  <p class="text-[9px] text-amber-600 font-bold mt-1 leading-tight">Note: This policy covers less than your event budget (₹{{ event().budget | number }}).</p>
-                }
+              </div>
+              <div class="border-l border-slate-100 pl-4">
+                <p class="text-[9px] text-[#8C1D40] font-black uppercase mb-1 tracking-widest">Estimated Premium</p>
+                <p class="text-lg font-black text-[#8C1D40]">₹{{ (quotes()[policy.policyId ?? policy.id]?.premiumAmount ?? 0) | number }}</p>
               </div>
             </div>
+
+            @if ((policy.maxCoverageAmount ?? 0) < (event()?.budget ?? 0)) {
+              <div class="mb-6 p-3 rounded-xl bg-amber-50 border border-amber-100">
+                <p class="text-[9px] text-amber-600 font-bold leading-tight uppercase tracking-tighter mb-1">Warning: Under-Covered</p>
+                <p class="text-[10px] text-amber-700 font-medium">This policy covers less than your event budget (₹{{ event().budget | number }}).</p>
+              </div>
+            }
 
             <div class="space-y-2 mb-8">
               <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-3">What's Covered</p>
@@ -186,3 +191,5 @@
 
   </div>
 </div>
+
+<app-gemini-chatbot [eventId]="eventId()" />

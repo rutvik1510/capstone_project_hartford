@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ClaimsOfficerService } from './claims-officer.service';
 import { AuthService } from '../../core/auth.service';
+import { AiService } from '../customer-dashboard/ai.service';
+import { FormsModule } from '@angular/forms';
 
 export interface Claim {
   claimId: number;
@@ -19,20 +21,35 @@ export interface Claim {
   status: string;
 }
 
+interface Message {
+  text: string;
+  sender: 'user' | 'agent';
+  actions?: string[];
+}
+
 @Component({
   selector: 'app-claims-officer-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './claims-officer-dashboard.component.html',
 })
 export class ClaimsOfficerDashboardComponent implements OnInit {
   private readonly service = inject(ClaimsOfficerService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly aiService = inject(AiService);
 
-  readonly allClaims = signal<Claim[]>([]);
+  // Use the resource from ClaimsOfficerService
+  readonly claimsResource = this.service.claimsResource;
+
+  // Computed signal for easy access in template
+  readonly allClaims = computed(() => {
+    const res = this.claimsResource.value();
+    return res?.data ?? res ?? [];
+  });
+
   readonly filter = signal<'ALL' | 'ASSIGNED'>('ASSIGNED');
-  readonly isLoading = signal(true);
+  readonly isLoading = this.claimsResource.isLoading;
   readonly actionError = signal<string | null>(null);
   
   readonly processingId = signal<number | null>(null);
@@ -41,28 +58,101 @@ export class ClaimsOfficerDashboardComponent implements OnInit {
 
   readonly officerEmail = computed(() => this.authService.getEmail() || 'Officer');
 
+  // Chatbot state
+  readonly isChatOpen = signal(false);
+  currentMessage = '';
+  readonly chatHistory = signal<Message[]>([
+    { text: 'Hello Claims Officer! I can help you verify incident details and analyze evidence documents. Which claim should we review?', sender: 'agent' }
+  ]);
+  readonly isTyping = signal(false);
+  private pollingInterval: any;
+
   ngOnInit(): void {
-    this.loadClaims(this.filter());
+    this.service.setFilter(this.filter());
+    this.loadChatHistory();
+    this.startPolling();
   }
 
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
+
+  private startPolling(): void {
+    if (typeof window !== 'undefined') {
+      this.pollingInterval = setInterval(() => {
+        this.service.reloadClaims();
+      }, 10000);
+    }
+  }
+
+  private stopPolling(): void {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
+  }
+
+  loadChatHistory(): void {
+    this.aiService.getHistory().subscribe({
+      next: (res: any) => {
+        const dbMessages = res.data ?? [];
+        if (dbMessages.length > 0) {
+          const mappedMessages: Message[] = dbMessages.map((m: any) => ({
+            text: m.message,
+            sender: m.sender === 'USER' ? 'user' : 'agent'
+          }));
+          this.chatHistory.set(mappedMessages);
+        }
+      },
+      error: () => console.error('Failed to load chat history')
+    });
+  }
+
+  toggleChat(): void {
+    this.isChatOpen.update(v => !v);
+  }
+
+  handleAction(action: string): void {
+    const act = action.toLowerCase();
+    if (act.includes('view assigned')) this.setFilter('ASSIGNED');
+    else if (act.includes('view all')) this.setFilter('ALL');
+    else {
+      this.currentMessage = action;
+      this.sendMessage();
+    }
+  }
+
+  sendMessage(): void {
+    const msg = this.currentMessage.trim();
+    if (!msg) return;
+
+    this.chatHistory.update(history => [...history, { text: msg, sender: 'user' }]);
+    this.currentMessage = '';
+    this.isTyping.set(true);
+
+    this.aiService.sendMessage({ userQuery: msg }).subscribe({
+      next: (res: any) => {
+        const data = res.data;
+        this.chatHistory.update(history => [...history, { 
+          text: data.message, 
+          sender: 'agent',
+          actions: data.actions 
+        }]);
+        this.isTyping.set(false);
+      },
+      error: () => {
+        this.chatHistory.update(history => [...history, { text: 'AI currently unavailable.', sender: 'agent' }]);
+        this.isTyping.set(false);
+      }
+    });
+  }
   setFilter(f: 'ALL' | 'ASSIGNED'): void {
     this.filter.set(f);
-    this.loadClaims(f);
+    this.service.setFilter(f);
   }
 
   loadClaims(f: 'ALL' | 'ASSIGNED' = 'ASSIGNED'): void {
-    this.isLoading.set(true);
-    const obs = f === 'ALL' ? this.service.getAllClaims() : this.service.getAssignedClaims();
-    
-    obs.subscribe({
-      next: (res: any) => {
-        this.allClaims.set(res.data ?? res ?? []);
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.isLoading.set(false);
-      },
-    });
+    // This is now handled by claimsResource
+    this.service.setFilter(f);
   }
 
   viewDetails(id: number): void {
@@ -91,7 +181,7 @@ export class ClaimsOfficerDashboardComponent implements OnInit {
     this.service.approveClaim(id, {}).subscribe({
       next: () => {
         this.processingId.set(null);
-        this.loadClaims(this.filter());
+        this.service.reloadClaims(); // Forced refresh
       },
       error: (err: any) => {
         this.actionError.set(err?.error?.message ?? 'Failed to approve.');
@@ -113,7 +203,7 @@ export class ClaimsOfficerDashboardComponent implements OnInit {
       next: () => {
         this.processingId.set(null);
         this.rejectingId.set(null);
-        this.loadClaims(this.filter());
+        this.service.reloadClaims(); // Forced refresh
       },
       error: (err: any) => {
         this.actionError.set(err?.error?.message ?? 'Failed to reject.');

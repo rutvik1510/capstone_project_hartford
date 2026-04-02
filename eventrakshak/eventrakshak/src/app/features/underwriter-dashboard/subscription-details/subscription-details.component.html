@@ -44,6 +44,10 @@
               <div><p class="text-xs text-slate-500 uppercase font-bold">Attendees</p><p class="text-sm font-medium">{{ sub().numberOfAttendees | number }}</p></div>
               <div><p class="text-xs text-slate-500 uppercase font-bold">Budget</p><p class="text-sm font-medium">₹{{ sub().budget | number }}</p></div>
               <div><p class="text-xs text-slate-500 uppercase font-bold">Customer</p><p class="text-sm font-medium">{{ sub().customerName }}</p></div>
+              <div class="col-span-2 pt-2 border-t mt-2">
+                <p class="text-xs text-[#8C1D40] uppercase font-bold">Current Premium Amount</p>
+                <p class="text-xl font-black text-[#8C1D40]">₹{{ sub().premiumAmount | number }}</p>
+              </div>
             </div>
           </div>
 

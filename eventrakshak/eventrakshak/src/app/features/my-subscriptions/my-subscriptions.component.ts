@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, computed, effect } from '@angular/core'; // Add effect
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MySubscriptionsService } from './my-subscriptions.service';
@@ -13,30 +13,40 @@ export class MySubscriptionsComponent implements OnInit {
   private readonly service = inject(MySubscriptionsService);
   private readonly router = inject(Router);
 
-  readonly subscriptions = signal<any[]>([]);
-  readonly isLoading = signal(true);
+  // Use the resource from MySubscriptionsService
+  readonly subscriptionsResource = this.service.subscriptionsResource;
+
+  // Computed signal for easy access in template
+  readonly subscriptions = computed(() => {
+    const res = this.subscriptionsResource.value();
+    return res?.data ?? res ?? [];
+  });
+
+  readonly isLoading = this.subscriptionsResource.isLoading;
+  readonly errorMessage = signal<string | null>(null);
   
   readonly isPaying = signal<number | null>(null);
   readonly isConfirming = signal<number | null>(null);
-  readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
 
+  constructor() {
+    // Sync errorMessage with resource error
+    effect(() => {
+      if (this.subscriptionsResource.error()) {
+        this.errorMessage.set('Failed to load subscriptions.');
+      }
+    });
+  }
+
   ngOnInit(): void {
-    this.loadData();
+    // We can still trigger a reload manually if needed, 
+    // but httpResource handles initial fetch automatically
+    this.service.reloadSubscriptions();
   }
 
   private loadData(): void {
-    this.isLoading.set(true);
-    this.service.getMySubscriptions().subscribe({
-      next: (subRes: any) => {
-        this.subscriptions.set(subRes.data ?? subRes ?? []);
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set('Failed to load subscriptions.');
-        this.isLoading.set(false);
-      }
-    });
+    // This is now handled by subscriptionsResource
+    this.service.reloadSubscriptions();
   }
 
   showConfirm(id: number): void {

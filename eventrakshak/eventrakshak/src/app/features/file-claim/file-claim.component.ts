@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FileClaimService } from './file-claim.service';
 import { MySubscriptionsService } from '../my-subscriptions/my-subscriptions.service';
+import { CustomerClaimsService } from '../customer-claims/customer-claims.service'; // Add this
 
 @Component({
   selector: 'app-file-claim',
@@ -17,6 +18,7 @@ export class FileClaimComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly subService = inject(MySubscriptionsService);
+  private readonly claimsService = inject(CustomerClaimsService); // Inject this
 
   readonly paramId = this.route.snapshot.paramMap.get('subscriptionId');
   readonly availableSubscriptions = signal<any[]>([]);
@@ -138,9 +140,11 @@ export class FileClaimComponent implements OnInit {
       evidenceDocPath
     }).subscribe({
       next: () => {
+        this.subService.reloadSubscriptions(); // Reload subscriptions
+        this.claimsService.reloadClaims(); // Reload claims
         this.successMessage.set('Claim filed successfully! Redirecting...');
         this.isSubmitting.set(false);
-        setTimeout(() => this.router.navigate(['/my-subscriptions']), 1500);
+        setTimeout(() => this.router.navigate(['/my-claims']), 1500); // Navigate to claims
       },
       error: (err) => {
         this.errorMessage.set(err?.error?.message ?? 'Failed to file claim. Please try again.');

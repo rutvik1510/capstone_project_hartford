@@ -72,22 +72,27 @@ export class AuthService {
     if (!token) return [];
     
     try {
-      const payload = jwtDecode<JwtPayload>(token);
-      const roles: string[] = [];
+      console.log('DEBUG: Current Token:', token);
+      const payload = jwtDecode<any>(token);
+      console.log('DEBUG: JWT Payload:', payload);
+      const roles: any[] = [];
       
       if (Array.isArray(payload.roles)) {
         roles.push(...payload.roles);
-      } else if (typeof payload.roles === 'string') {
+      } else if (payload.roles) {
         roles.push(payload.roles);
-      } else if (typeof payload.role === 'string') {
+      } else if (payload.role) {
         roles.push(payload.role);
       }
 
       return roles.map(r => {
-        const u = r.toUpperCase();
+        // Handle if role is an object like {authority: 'ROLE_...'}
+        const roleStr = (typeof r === 'object' && r.authority) ? r.authority : String(r);
+        const u = roleStr.toUpperCase();
         return u.startsWith('ROLE_') ? u : `ROLE_${u}`;
       });
-    } catch {
+    } catch (e) {
+      console.error('DEBUG: Error decoding roles:', e);
       return [];
     }
   }
@@ -97,7 +102,9 @@ export class AuthService {
     const roles = this.getRoles();
     const normalized = expectedRole.toUpperCase();
     const withPrefix = normalized.startsWith('ROLE_') ? normalized : `ROLE_${normalized}`;
-    return roles.includes(withPrefix);
+    const result = roles.includes(withPrefix);
+    console.log(`DEBUG: hasRole('${expectedRole}')? Result: ${result}. User roles:`, roles);
+    return result;
   }
 
   // Helper for primary role (routing)

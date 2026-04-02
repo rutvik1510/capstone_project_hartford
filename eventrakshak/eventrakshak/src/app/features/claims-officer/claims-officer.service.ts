@@ -1,11 +1,31 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { inject, Injectable, signal } from '@angular/core'; // Add signal
+import { HttpClient, httpResource } from '@angular/common/http'; // Add httpResource
 import { Observable } from 'rxjs';
+import { AuthService } from '../../core/auth.service'; // Add AuthService
 
 @Injectable({ providedIn: 'root' })
 export class ClaimsOfficerService {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
   private readonly base = 'http://localhost:8080/claims-officer/claims';
+
+  private readonly refreshTrigger = signal(0);
+  private readonly filter = signal<'ALL' | 'ASSIGNED'>('ASSIGNED');
+
+  readonly claimsResource = httpResource<any>(() => {
+    this.refreshTrigger();
+    if (!this.authService.isLoggedIn()) return undefined;
+    const f = this.filter();
+    return f === 'ALL' ? this.base : `${this.base}/assigned`;
+  });
+
+  reloadClaims(): void {
+    this.refreshTrigger.update((v: number) => v + 1);
+  }
+
+  setFilter(f: 'ALL' | 'ASSIGNED'): void {
+    this.filter.set(f);
+  }
 
   getClaims(): Observable<any> {
     return this.http.get(this.base);

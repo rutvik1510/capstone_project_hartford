@@ -14,6 +14,10 @@ export class EventDetailsService {
     return this.http.get(`http://localhost:8080/policies/domain/${domain}`);
   }
 
+  getQuotesForEvent(eventId: number): Observable<any> {
+    return this.http.get(`http://localhost:8080/subscriptions/quotes-for-event/${eventId}`);
+  }
+
   getMySubscriptions(): Observable<unknown> {
     return this.http.get('http://localhost:8080/subscriptions');
   }

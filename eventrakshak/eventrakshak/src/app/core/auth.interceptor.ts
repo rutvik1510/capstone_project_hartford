@@ -16,10 +16,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(clonedReq).pipe(
     catchError((err) => {
-      if (err.status === 401 || err.status === 403) {
-        // If unauthorized or forbidden, force logout
+      if (err.status === 401) {
+        // If unauthorized (token expired/invalid), force logout
         authService.logout();
         router.navigate(['/login']);
+      } else if (err.status === 403) {
+        // If forbidden, just redirect to unauthorized page without clearing session
+        router.navigate(['/unauthorized']);
       }
       return throwError(() => err);
     })

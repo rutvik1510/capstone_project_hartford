@@ -119,15 +119,46 @@
               </div>
             </div>
 
-            @if (sub.approvedBy) {
-              <div class="mt-3 flex flex-col gap-1">
-                <p class="text-xs text-slate-400">Reviewed by: <span class="font-medium text-slate-600">{{ sub.approvedBy }}</span></p>
-                @if (sub.overrideReason) {
-                  <div class="p-2.5 rounded-lg bg-indigo-50 border border-indigo-100 mt-1">
-                    <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-0.5">Underwriter Note</p>
-                    <p class="text-xs text-indigo-900 italic">"{{ sub.overrideReason }}"</p>
+            @if (sub.status?.toUpperCase() !== 'PENDING') {
+              <div class="mt-6 border-t border-slate-100 pt-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                  <span class="text-xs font-black text-[#1F2937] uppercase tracking-widest">Underwriter Review Feedback</span>
+                </div>
+
+                <div class="space-y-3">
+                  <!-- Decision Status -->
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <span class="text-xs font-bold text-slate-500">Final Decision</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase {{ statusClass(sub.status) }}">
+                      {{ sub.status }}
+                    </span>
                   </div>
-                }
+
+                  <!-- Rejection Reason -->
+                  @if (sub.status?.toUpperCase() === 'REJECTED' && sub.rejectionReason) {
+                    <div class="p-3 rounded-xl bg-red-50 border border-red-100">
+                      <p class="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1">Rejection Reason</p>
+                      <p class="text-xs text-red-900 font-bold italic">"{{ sub.rejectionReason }}"</p>
+                    </div>
+                  }
+
+                  <!-- Premium Adjustment Note -->
+                  @if (sub.overrideReason) {
+                    <div class="p-3 rounded-xl bg-indigo-50 border border-indigo-100">
+                      <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Premium Adjustment Note</p>
+                      <p class="text-xs text-indigo-900 italic">"{{ sub.overrideReason }}"</p>
+                    </div>
+                  }
+
+                  <!-- Underwriter General Notes -->
+                  @if (sub.underwriterNotes) {
+                    <div class="p-3 rounded-xl bg-blue-50 border border-blue-100">
+                      <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Reviewer Remarks</p>
+                      <p class="text-xs text-blue-900 leading-relaxed italic">"{{ sub.underwriterNotes }}"</p>
+                    </div>
+                  }
+                </div>
               </div>
             }
 
@@ -147,7 +178,7 @@
                 </div>
                 <div>
                   @if (sub.isLocked) {
-                    <p class="text-sm font-bold text-emerald-800">Claim Settled & Event Closed</p>
+                    <p class="text-sm font-bold text-emerald-800">Event is Settled</p>
                     <p class="text-xs text-emerald-600 mt-0.5">Payment has been collected. Operations for this event are now finalized.</p>
                   } @else {
                     <p class="text-sm font-bold text-emerald-800">Claim Successfully Filed</p>
@@ -231,13 +262,6 @@
                     </svg>
                     Policy Active & Protected ✓
                   </span>
-                  
-                  @if (sub.underwriterNotes) {
-                    <div class="mt-3 p-3 bg-blue-50/50 border border-blue-100 rounded-xl">
-                      <p class="text-[9px] font-black uppercase text-blue-400 mb-1">Underwriter Review Notes</p>
-                      <p class="text-xs text-blue-900 leading-relaxed italic">"{{ sub.underwriterNotes }}"</p>
-                    </div>
-                  }
 
                   <div class="flex items-center gap-3 mt-3">
                     <button (click)="viewReport(sub.subscriptionId)" class="text-[10px] font-black uppercase text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors">
@@ -267,7 +291,7 @@
                   @if (sub.isLocked) {
                     <span class="text-xs text-emerald-700 font-bold uppercase tracking-widest italic flex items-center gap-1">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
-                      Event Locked
+                      Event is Settled
                     </span>
                   } @else {
                     <span class="text-xs text-emerald-700 font-medium italic">Claim is under review</span>
@@ -285,22 +309,11 @@
                     <p class="text-[10px] font-black text-red-700 uppercase tracking-widest">Subscription Rejected</p>
                   </div>
                   
-                  <p class="text-sm font-black text-red-900 italic mb-4 leading-relaxed">
-                    "{{ sub.rejectionReason || 'Risk threshold not met.' }}"
-                  </p>
-
                   <div class="pt-4 border-t border-red-100 flex flex-col gap-2">
                     <div>
                       <p class="text-[10px] font-bold text-red-600 uppercase mb-0.5">Contact Support</p>
                       <p class="text-xs text-red-800 font-medium">Please contact the manager for further communication regarding this decision.</p>
                     </div>
-
-                    @if (sub.underwriterNotes) {
-                      <div class="mt-2 p-3 bg-white/50 border border-red-100 rounded-xl">
-                        <p class="text-[9px] font-black uppercase text-red-400 mb-1">Underwriter Review Notes</p>
-                        <p class="text-xs text-red-900 leading-relaxed italic">"{{ sub.underwriterNotes }}"</p>
-                      </div>
-                    }
                   </div>
                 </div>
                 <span></span>

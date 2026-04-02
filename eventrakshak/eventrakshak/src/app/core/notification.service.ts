@@ -17,6 +17,29 @@ export class NotificationService {
 
   readonly unreadCount = signal<number>(0);
   readonly notifications = signal<Notification[]>([]);
+  private pollingInterval: any;
+
+  constructor() {
+    this.startPolling();
+  }
+
+  startPolling(): void {
+    // Initial load
+    this.loadNotifications();
+    
+    // Poll every 10 seconds
+    if (typeof window !== 'undefined') {
+      this.pollingInterval = setInterval(() => {
+        this.loadNotifications();
+      }, 10000);
+    }
+  }
+
+  stopPolling(): void {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
+  }
 
   loadNotifications(): void {
     this.http.get<any>(this.base).subscribe(res => {
