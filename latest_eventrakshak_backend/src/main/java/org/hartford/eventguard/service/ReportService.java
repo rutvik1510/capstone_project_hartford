@@ -4,7 +4,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.hartford.eventguard.entity.Claim;
 import org.hartford.eventguard.entity.PolicySubscription;
 import org.hartford.eventguard.exception.ResourceNotFoundException;
@@ -156,13 +155,13 @@ public class ReportService {
         // Logo Section
         contentStream.setNonStrokingColor(PRIMARY_COLOR);
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 24);
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 24);
         contentStream.newLineAtOffset(LEFT_MARGIN, 750);
         contentStream.showText("EventGuard");
         contentStream.endText();
 
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 10);
+        contentStream.setFont(PDType1Font.HELVETICA, 10);
         contentStream.setNonStrokingColor(Color.GRAY);
         contentStream.newLineAtOffset(LEFT_MARGIN, 735);
         contentStream.showText("Official Digital Receipt");
@@ -170,7 +169,7 @@ public class ReportService {
 
         // Receipt/Ref No on Right
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 10);
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10);
         contentStream.setNonStrokingColor(PRIMARY_COLOR);
         contentStream.newLineAtOffset(400, 750);
         contentStream.showText("REFERENCE: " + refNo);
@@ -178,7 +177,7 @@ public class ReportService {
 
         // Main Title
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 18);
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 18);
         contentStream.newLineAtOffset(LEFT_MARGIN, 695);
         contentStream.showText(title);
         contentStream.endText();
@@ -195,7 +194,7 @@ public class ReportService {
         contentStream.fill();
 
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 10);
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10);
         contentStream.setNonStrokingColor(ACCENT_COLOR);
         contentStream.newLineAtOffset(LEFT_MARGIN + 5, y);
         contentStream.showText(title.toUpperCase());
@@ -207,7 +206,7 @@ public class ReportService {
     private void drawReceiptRow(PDPageContentStream contentStream, float y, String label, String value) throws IOException {
         // Label
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 10);
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10);
         contentStream.setNonStrokingColor(new Color(107, 114, 128)); // Slate-500
         contentStream.newLineAtOffset(LEFT_MARGIN + 5, y);
         contentStream.showText(label);
@@ -216,7 +215,7 @@ public class ReportService {
         // Dotted Line (optional visual)
         // Value
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 10);
+        contentStream.setFont(PDType1Font.HELVETICA, 10);
         contentStream.setNonStrokingColor(PRIMARY_COLOR);
         contentStream.newLineAtOffset(LEFT_MARGIN + VALUE_OFFSET, y);
         contentStream.showText(value != null ? value : "N/A");
@@ -229,7 +228,7 @@ public class ReportService {
         contentStream.fill();
 
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 10);
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10);
         contentStream.setNonStrokingColor(Color.WHITE);
         contentStream.newLineAtOffset(x + 15, y + 7);
         contentStream.showText(text);
@@ -239,7 +238,7 @@ public class ReportService {
     private void drawLongText(PDPageContentStream contentStream, float x, float y, String text) throws IOException {
         if (text == null) return;
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 10);
+        contentStream.setFont(PDType1Font.HELVETICA, 10);
         contentStream.setNonStrokingColor(PRIMARY_COLOR);
         contentStream.newLineAtOffset(x + 5, y);
         if (text.length() > 90) {
@@ -257,7 +256,7 @@ public class ReportService {
         contentStream.stroke();
 
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 8);
+        contentStream.setFont(PDType1Font.HELVETICA, 8);
         contentStream.setNonStrokingColor(Color.GRAY);
         contentStream.newLineAtOffset(LEFT_MARGIN, 85);
         contentStream.showText("This is an electronically generated receipt and does not require a physical signature.");
@@ -274,7 +273,7 @@ public class ReportService {
         contentStream.stroke();
         
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 8);
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 8);
         contentStream.setNonStrokingColor(ACCENT_COLOR);
         contentStream.newLineAtOffset(435, 60);
         contentStream.showText("AUTHORIZED STAMP");
@@ -284,7 +283,7 @@ public class ReportService {
     private void drawText(PDPageContentStream contentStream, float x, float y, String text) throws IOException {
         if (text == null) text = "N/A";
         contentStream.beginText();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 10);
+        contentStream.setFont(PDType1Font.HELVETICA, 10);
         contentStream.newLineAtOffset(x, y);
         contentStream.showText(text);
         contentStream.endText();

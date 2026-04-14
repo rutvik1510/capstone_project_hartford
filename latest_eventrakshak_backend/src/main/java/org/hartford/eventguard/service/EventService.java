@@ -27,15 +27,18 @@ public class EventService {
     private final UserRepository userRepository;
     private final PolicySubscriptionRepository subscriptionRepository;
     private final ClaimsRepository claimsRepository;
+    private final RAGService ragService;
 
     public EventService(EventRepository eventRepository,
                         UserRepository userRepository,
                         PolicySubscriptionRepository subscriptionRepository,
-                        ClaimsRepository claimsRepository) {
+                        ClaimsRepository claimsRepository,
+                        RAGService ragService) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.claimsRepository = claimsRepository;
+        this.ragService = ragService;
     }
 
     public EventResponse createMusicEvent(MusicEventRequest request, String email) {
@@ -43,6 +46,7 @@ public class EventService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Event event = new Event();
+        // ... (rest of event mapping)
         event.setEventName(request.getEventName());
         event.setEventDate(request.getEventDate());
         event.setLocation(request.getLocation());
@@ -72,6 +76,16 @@ public class EventService {
         event.setCelebrityInvolved(request.getCelebrityInvolved());
 
         Event saved = eventRepository.save(event);
+
+        // --- NEW: RAG INDEXING ---
+        if (saved.getSafetyComplianceDocPath() != null && !saved.getSafetyComplianceDocPath().isBlank()) {
+            java.util.Map<String, Object> meta = new java.util.HashMap<>();
+            meta.put("type", "SAFETY_COMPLIANCE");
+            meta.put("eventId", saved.getEventId());
+            meta.put("eventName", saved.getEventName());
+            ragService.indexUserDocument(java.nio.file.Paths.get("uploads", saved.getSafetyComplianceDocPath()), user.getUserId(), meta);
+        }
+
         return convertToDTO(saved);
     }
 
@@ -80,6 +94,7 @@ public class EventService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Event event = new Event();
+        // ... (rest of mapping)
         event.setEventName(request.getEventName());
         event.setEventDate(request.getEventDate());
         event.setLocation(request.getLocation());
@@ -108,6 +123,16 @@ public class EventService {
         event.setEmergencyPreparednessLevel(request.getEmergencyPreparednessLevel());
 
         Event saved = eventRepository.save(event);
+
+        // --- NEW: RAG INDEXING ---
+        if (saved.getSafetyComplianceDocPath() != null && !saved.getSafetyComplianceDocPath().isBlank()) {
+            java.util.Map<String, Object> meta = new java.util.HashMap<>();
+            meta.put("type", "SAFETY_COMPLIANCE");
+            meta.put("eventId", saved.getEventId());
+            meta.put("eventName", saved.getEventName());
+            ragService.indexUserDocument(java.nio.file.Paths.get("uploads", saved.getSafetyComplianceDocPath()), user.getUserId(), meta);
+        }
+
         return convertToDTO(saved);
     }
 

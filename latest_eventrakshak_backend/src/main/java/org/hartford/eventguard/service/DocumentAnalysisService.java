@@ -1,9 +1,9 @@
 package org.hartford.eventguard.service;
 
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.hartford.eventguard.entity.PolicySubscription;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -17,7 +17,7 @@ public class DocumentAnalysisService {
     private final String uploadDir = "uploads";
     private final GroqService groqService;
 
-    public DocumentAnalysisService(GroqService groqService) {
+    public DocumentAnalysisService(@Lazy GroqService groqService) {
         this.groqService = groqService;
     }
 
@@ -36,7 +36,7 @@ public class DocumentAnalysisService {
             String truncatedText = extractedText.length() > 4000 ? extractedText.substring(0, 4000) : extractedText;
 
             String prompt = buildAnalysisPrompt(truncatedText, contextType);
-            String rawResponse = groqService.generateContent(prompt);
+            String rawResponse = groqService.generateContent("AUDITOR", prompt);
             
             // Post-process to remove any remaining stars
             return rawResponse.replace("*", "");
@@ -76,10 +76,11 @@ public class DocumentAnalysisService {
               .append("- Highlight potential Red Flags or risks.\n")
               .append("- AI SUGGESTED RISK SCORE: Based on the document and the system risk, suggest a final risk score (0-20%). Explain if it should be higher or lower than the system risk.\n")
               .append("- At the end, provide a 'DECISION SUGGESTION' (APPROVE or REJECT) with a one-sentence reason.\n")
-              .append("- IMPORTANT: DO NOT use asterisks (*) for bolding or bullet points. Use plain text and simple dashes (-) for lists.\n")
-              .append("- Keep it professional and focus only on the most important parts for an insurance decision.");
+              .append("- IMPORTANT: DO NOT use asterisks (*) for bolding or bullet points. Use plain text and simple dashes (-) for lists.\n");
+            
+            sb.append("- Keep it professional and focus only on the most important parts for an insurance decision.");
 
-            String rawResponse = groqService.generateContent(sb.toString());
+            String rawResponse = groqService.generateContent("AUDITOR", sb.toString());
             return rawResponse.replace("*", "");
 
         } catch (Exception e) {
@@ -95,7 +96,7 @@ public class DocumentAnalysisService {
             throw new IOException("File not found: " + fileName);
         }
 
-        try (PDDocument document = Loader.loadPDF(file)) {
+        try (PDDocument document = PDDocument.load(file)) {
             PDFTextStripper stripper = new PDFTextStripper();
             return stripper.getText(document);
         }
